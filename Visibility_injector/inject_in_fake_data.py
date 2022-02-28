@@ -30,27 +30,28 @@ class FakeVisibility(object):
         with open(injection_params_file) as f:
             self.injection_params = yaml.safe_load(f)
 
-        if hasattr(self.injection_params, 'furby_file'):
+        if 'furby_file' in self.injection_params:
             self.read_in_runtime = True
-        elif hasattr(self.injection_params, 'furby_props'):
+        elif 'furby_props' in self.injection_params:
             self.simulate_in_runtime = True
         else:
             raise ValueError("The injection params file needs to specify either 'furby_file' or 'furby_props'")
 
         self.tel_props_dict = {'ftop': self.plan.ftop,
                                 'fbottom': self.plan.fbottom,
-                                'nch': self.plan.nch,
+                                'nch': self.plan.nf,
                                 'tsamp': self.plan.tsamp,
                                 'name': "FAKE"                                
                             }
 
     def get_next_furby(self, iFRB):
         if self.read_in_runtime:
+            print("Reading fuby from file: {0}".format(self.injection_params['furby_file'][iFRB]))
             furby = Furby_reader(self.injection_params['furby_file'][iFRB])
             furby_data = furby.read_data()
 
             if (
-                (furby.header.NCHAN == self.plan.nch) and
+                (furby.header.NCHAN == self.plan.nf) and
                 (furby.header.TSAMP == self.plan.tsamp) and
                 (furby.header.FTOP == self.plan.ftop) and
                 (furby.header.FBOTTOM == self.plan.fbottom)  ):
@@ -63,7 +64,9 @@ class FakeVisibility(object):
                 raise ValueError("Params for furby_{0} do not match the requested telescope params".format(furby.header.ID))
 
         elif self.simulate_in_runtime:
+
             P = self.injection_params['furby_props']
+            print("Simulating {ii}th furby from params:\n{params}".format(ii=iFRB, params=P))
             furby_data, _, _, furby_nsamps = get_furby(
                 P['dm'][iFRB],
                 P['snr'][iFRB],
@@ -74,6 +77,11 @@ class FakeVisibility(object):
                 P['noise_per_sample'],            
                  )
             furby_data = furby_data[::-1, :].copy() * self.amplitude_ratio
+
+            import matplotlib.pyplot as plt
+            plt.imshow(furby_data, aspect='auto')
+            plt.title("simulated FRB")
+            plt.show()
 
             return furby_data, furby_nsamps
 
