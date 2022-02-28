@@ -1,0 +1,40 @@
+
+min_gap_samps: 1000
+
+injection_tsamps:
+    - 100
+    - 2000
+    - 4000
+
+#furby_file:
+#    - /Users/gup037/Codes/Furby_install/temp_database/furby_07347
+#    - /Users/gup037/Codes/Furby_install/temp_database/furby_21276
+#    - /Users/gup037/Codes/Furby_install/temp_database/furby_07347
+
+furby_props:
+    noise_per_sample : 1.0
+    dm:
+        - 30
+        - 20
+        - 50
+    snr:
+        - 20
+        - 50
+        - 100
+    width:
+        - 0.1
+        - 1.0
+        - 10.0
+    tau0:
+        - 0.1
+        - 1.0
+        - 2.0
+    spectrum:
+        - patchy
+        - power_law
+        - random
+
+        
+    
+
+
