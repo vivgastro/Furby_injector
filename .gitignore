@@ -1,6 +1,4 @@
-*.egg-info
-__pycache__
-*/__pycache__
+Visibility_injector.egg-info
+Visibility_injector/__pycache__
 .*.swp
 *.pyc
-*/*.pyc
