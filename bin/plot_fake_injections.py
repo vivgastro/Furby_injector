@@ -12,13 +12,6 @@ class FakePlan(object):
         self.tsamp_s = tsamp
 
     @property
-    def tsamp_s(self):
-        '''
-        Returns the tsamp (in sec)
-        '''
-        return self.tsamp_s
-        
-    @property
     def nf(self):
         '''
         Returns the number of channels
@@ -52,6 +45,7 @@ plan = FakePlan()
 def main(args):
     injections_params_file = args.inj_params
     FV = FakeVisibility(plan, tot_nsamps = int(0.6e4),  injection_params_file = injections_params_file)
+    block_gen = FV.get_fake_data_block
 
     for ii, block in enumerate(FV.get_fake_data_block()):
         plt.figure()

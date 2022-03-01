@@ -186,7 +186,7 @@ class FakeVisibility(object):
         data_block.imag = np.random.randn(*data_block.imag.shape)
 
 
-    def get_fake_data_block(self):
+    def get_fake_data_block(self, add_noise = True):
         '''
         Gets data blocks containing fake noise and injected furbys.
         It calls the add_fake_noise() and get_ith_furby() functions,
@@ -213,7 +213,8 @@ class FakeVisibility(object):
             iblk +=1
             print(f"Block ID: {iblk}, start_samp = {iblk * self.blk_shape[2]}, end_samp = {(iblk+1) * self.blk_shape[2]}")
 
-            self.add_fake_noise(data_block)
+            if add_noise:
+                self.add_fake_noise(data_block)
 
             if injection_samp + samps_added < iblk * self.blk_shape[2]:
                 raise RuntimeError(f"The requested injection samp {injection_samp} is too soon.")
