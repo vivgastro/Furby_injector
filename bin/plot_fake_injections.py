@@ -9,15 +9,22 @@ class FakePlan(object):
         self.nt = nt
         self.nbl = nbl
         self.freqs = freqs
-        self.tsamp = tsamp
+        self.tsamp_s = tsamp
 
+    @property
+    def tsamp_s(self):
+        '''
+        Returns the tsamp (in sec)
+        '''
+        return self.tsamp_s
+        
     @property
     def nf(self):
         '''
         Returns the number of channels
         '''
         return len(self.freqs)
-        
+
     @property
     def foff(self):
         '''

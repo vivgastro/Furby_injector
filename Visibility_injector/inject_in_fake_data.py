@@ -26,7 +26,7 @@ class FakeVisibility(object):
             - nbl: Number of baselines
             - fmax: Center freq of highest channel (in MHz)
             - fmin: Center freq of lower channel (in MHz)
-            - tsamp: Sampling time (in sec)
+            - tsamp_s: Sampling time (in sec)
         
         injection_params_file : str
             Path to the yaml file containing params of the required
@@ -67,7 +67,7 @@ class FakeVisibility(object):
         self.tel_props_dict = {'ftop': self.plan.fmax + self.plan.foff/2,
                                 'fbottom': self.plan.fmin - self.plan.foff/2,
                                 'nch': self.plan.nf,
-                                'tsamp': self.plan.tsamp,
+                                'tsamp': self.plan.tsamp_s,
                                 'name': "FAKE"                                
                             }
         np.random.seed(self.injection_params['seed'])
@@ -140,7 +140,7 @@ class FakeVisibility(object):
 
             if (
                 (furby.header.NCHAN == self.plan.nf) and
-                (furby.header.TSAMP == self.plan.tsamp) and
+                (furby.header.TSAMP * 1e-6 == self.plan.tsamp_s) and
                 (furby.header.FTOP == self.plan.fmax + self.plan.foff/2) and
                 (furby.header.FBOTTOM == self.plan.fmin - self.plan.foff/2)  ):
 
