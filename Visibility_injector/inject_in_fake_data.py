@@ -247,13 +247,15 @@ class FakeVisibility(object):
                 if i_inj >= self.n_injections or iblk >= self.max_nblk:
                     print("This was also the last FRB, so this will be the last block I will yield")
                     breaking_point = True
-                
-                if i_inj < self.n_injections:
+
+                else:
                     iFRB = self.sort[i_inj]
-                    current_mock_FRB_data, current_mock_FRB_NSAMPS, location_of_peak = self.get_ith_furby(iFRB)
-                    samps_added = 0
-                    injection_samp = self.injection_params['injection_tsamps'][iFRB] - location_of_peak
-                    print(f"New injection samp will be {injection_samp}")
+
+                    if i_inj < self.n_injections:
+                        current_mock_FRB_data, current_mock_FRB_NSAMPS, location_of_peak = self.get_ith_furby(iFRB)
+                        samps_added = 0
+                        injection_samp = self.injection_params['injection_tsamps'][iFRB] - location_of_peak
+                        print(f"New injection samp will be {injection_samp}")
 
 
     
