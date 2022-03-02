@@ -5,7 +5,7 @@ import argparse
 
 class FakePlan(object):
     
-    def __init__(self, nt=300, nbl=190, tsamp=0.001, freqs = np.arange(735, 991, 1) + 0.5):
+    def __init__(self, nt=300, nbl=190, tsamp=0.001, freqs = 1e6 * (np.arange(735, 991, 1) + 0.5)):
         self.nt = nt
         self.nbl = nbl
         self.freqs = freqs
