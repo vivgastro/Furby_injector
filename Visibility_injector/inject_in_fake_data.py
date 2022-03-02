@@ -198,6 +198,7 @@ class FakeVisibility(object):
         injection while continuing to finish the current one. Future
         injections remain unaffected.
         '''
+        breaking_point = False
         injecting_here = False
         i_inj = 0
         iFRB = self.sort[i_inj]
@@ -244,8 +245,8 @@ class FakeVisibility(object):
                 injecting_here = False
                 i_inj += 1
                 if i_inj >= self.n_injections or iblk >= self.max_nblk:
-                    print("This was also the last FRB, so exiting the loop now")
-                    break
+                    print("This was also the last FRB, so this will be the last block I will yield")
+                    breaking_point = True
                 iFRB = self.sort[i_inj]
                 if i_inj < self.n_injections:
                     current_mock_FRB_data, current_mock_FRB_NSAMPS, location_of_peak = self.get_ith_furby(iFRB)
@@ -256,6 +257,9 @@ class FakeVisibility(object):
 
     
             yield data_block
+            
+            if breaking_point:
+                break
 
 
 
