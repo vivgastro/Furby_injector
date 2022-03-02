@@ -24,8 +24,8 @@ class FakeVisibility(object):
             - nt: Number of time samples in each block
             - nf: Number of freq channels
             - nbl: Number of baselines
-            - fmax: Center freq of highest channel (in MHz)
-            - fmin: Center freq of lower channel (in MHz)
+            - fmax: Center freq of highest channel (in Hz)
+            - fmin: Center freq of lower channel (in Hz)
             - tsamp_s: Sampling time (in sec)
         
         injection_params_file : str
@@ -46,6 +46,8 @@ class FakeVisibility(object):
 
         '''
         self.plan = plan
+        self.ftop_MHz = (self.plan.fmax + self.plan.foff/2) / 1e6
+        self.fbottom_MHz = (self.plan.fmin - self.plan.foff/2) / 1e6
         self.get_injection_params(injection_params_file)
         self.set_furby_gen_mode()
 
@@ -64,8 +66,8 @@ class FakeVisibility(object):
 
         self.sort = np.argsort(self.injection_params['injection_tsamps'])
 
-        self.tel_props_dict = {'ftop': self.plan.fmax + self.plan.foff/2,
-                                'fbottom': self.plan.fmin - self.plan.foff/2,
+        self.tel_props_dict = {'ftop': self.ftop_MHz,
+                                'fbottom': self.fbottom_MHz,
                                 'nch': self.plan.nf,
                                 'tsamp': self.plan.tsamp_s,
                                 'name': "FAKE"                                
@@ -141,8 +143,8 @@ class FakeVisibility(object):
             if (
                 (furby.header.NCHAN == self.plan.nf) and
                 (furby.header.TSAMP * 1e-6 == self.plan.tsamp_s) and
-                (furby.header.FTOP == self.plan.fmax + self.plan.foff/2) and
-                (furby.header.FBOTTOM == self.plan.fmin - self.plan.foff/2)  ):
+                (furby.header.FTOP == self.ftop_MHz) and
+                (furby.header.FBOTTOM == self.fbottom_MHz)  ):
 
                     if furby.header.BW < 0:
                         furby_data = furby_data[::-1, :].copy()
