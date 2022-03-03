@@ -210,11 +210,11 @@ class FakeVisibility(object):
         samps_added = 0
         injection_samp = self.injection_params['injection_tsamps'][iFRB] - location_of_peak
 
-        data_block = np.zeros(self.blk_shape, dtype=np.complex64)
         #for iblk in range(self.nblk):
         while True:
             iblk +=1
             print(f"Block ID: {iblk}, start_samp = {iblk * self.blk_shape[2]}, end_samp = {(iblk+1) * self.blk_shape[2]}")
+            data_block = np.zeros(self.blk_shape, dtype=np.complex64)
 
             if self.injection_params['add_noise']:
                 self.add_fake_noise(data_block)
