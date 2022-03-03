@@ -3,6 +3,7 @@ from Furby_p3.sim_furby import get_furby
 from Furby_p3.Furby_reader import Furby_reader
 import yaml
 #import matplotlib.pyplot as plt
+import logging
 
 class FakeVisibility(object):
     '''
@@ -51,7 +52,6 @@ class FakeVisibility(object):
         self.get_injection_params(injection_params_file)
         self.set_furby_gen_mode()
 
-        
         self.max_nblk = tot_nsamps // plan.nt
         if tot_nsamps is None:
             self.max_nblk = np.inf
@@ -188,7 +188,7 @@ class FakeVisibility(object):
         data_block.imag = np.random.randn(*data_block.imag.shape)
 
 
-    def get_fake_data_block(self, add_noise = True):
+    def get_fake_data_block(self):
         '''
         Gets data blocks containing fake noise and injected furbys.
         It calls the add_fake_noise() and get_ith_furby() functions,
@@ -216,7 +216,7 @@ class FakeVisibility(object):
             iblk +=1
             print(f"Block ID: {iblk}, start_samp = {iblk * self.blk_shape[2]}, end_samp = {(iblk+1) * self.blk_shape[2]}")
 
-            if add_noise:
+            if self.injection_params['add_noise']:
                 self.add_fake_noise(data_block)
 
             if injection_samp + samps_added < iblk * self.blk_shape[2]:

@@ -1,4 +1,5 @@
 seed: 777
+add_noise: True
 
 injection_tsamps:
     - 100
