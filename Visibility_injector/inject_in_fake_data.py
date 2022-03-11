@@ -158,7 +158,7 @@ class FakeVisibility(object):
 
             P = self.injection_params['furby_props'][iFRB]
             print("Simulating {ii}th furby with params:\n{params}".format(ii=iFRB, params=P))
-            furby_data, _, _, furby_nsamps = get_furby(
+            furby_data, furby_header = get_furby(
                 P['dm'],
                 P['snr'],
                 P['width'],
@@ -168,7 +168,7 @@ class FakeVisibility(object):
                 P['noise_per_sample'] )
             furby_data = furby_data[::-1, :].copy() * self.amplitude_ratio
             location_of_frb = np.argmax(furby_data[0])
-            return furby_data, furby_nsamps, location_of_frb
+            return furby_data, furby_header['NSAMPS'], location_of_frb
 
         else:
             raise ValueError("Neither asked to read nor to simulate")
