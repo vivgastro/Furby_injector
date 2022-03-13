@@ -22,19 +22,22 @@ furby_props:
        'width': 0.0001,
        'tau0': 0.0001,
        'spectrum': patchy,
-       'noise_per_sample' : 1.0}
+       'noise_per_sample' : 1.0,
+       'shape' : tophat}
     - {'snr': 200,
        'dm': 20,
        'width': 0.0002,
        'tau0': 0.0002,
        'spectrum': power_law,
-       'noise_per_sample' : 1.0}
+       'noise_per_sample' : 1.0,
+       'shape' : tophat}
     - {'snr': 300,
        'dm': 30,
        'width': 0.003,
        'tau0': 0.003,
        'spectrum': random,
-       'noise_per_sample' : 1.0}       
+       'noise_per_sample' : 1.0,
+       'shape' : gaussian }       
     
 
 

@@ -159,13 +159,14 @@ class FakeVisibility(object):
             P = self.injection_params['furby_props'][iFRB]
             print("Simulating {ii}th furby with params:\n{params}".format(ii=iFRB, params=P))
             furby_data, furby_header = get_furby(
-                P['dm'],
-                P['snr'],
-                P['width'],
-                P['tau0'],
-                self.tel_props_dict,
-                P['spectrum'],
-                P['noise_per_sample'] )
+                dm=P['dm'],
+                snr=P['snr'],
+                width=P['width'],
+                tau0=P['tau0'],
+                shape=P['shape'],
+                telescope_params=self.tel_props_dict,
+                spectrum_type=P['spectrum'],
+                noise_per_sample=P['noise_per_sample'] )
             furby_data = furby_data[::-1, :].copy() * self.amplitude_ratio
             location_of_frb = np.argmax(furby_data[0])
             return furby_data, furby_header['NSAMPS'], location_of_frb
