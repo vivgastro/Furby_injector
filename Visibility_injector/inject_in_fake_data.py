@@ -13,7 +13,7 @@ def setUpLogging(logfile=None):
 
     logger = logging.getLogger("Visbility_injector")
 
-    stderr_formatter = logging.Formatter("%(name)s - %(func)s - %(levelname)s: %(message)s")
+    stderr_formatter = logging.Formatter("%(name)s - %(level)s: %(msg)s")
     logfile_formatter = logging.Formatter("%(asctime)s, %(level)s: %(msg)s")
 
     consoleHandler = logging.StreamHandler(sys.stderr)
@@ -189,6 +189,8 @@ class FakeVisibility(object):
                     location_of_frb = np.argmax(furby_data[0])
                     return furby_data, furby.header.NSAMPS, location_of_frb
             else:
+                self.log.debug("furby_header = {0}".format(furby.header), "nf, tsamp_s, ftop_MHz, fbottom_MHz = ",
+                self.plan.nf, self.plan.tsamp_s, self.ftop_MHz, self.fbottom_MHz)
                 raise ValueError("Params for furby_{0} do not match the requested telescope params".format(furby.header.ID))
 
         elif self.simulate_in_runtime:
