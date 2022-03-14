@@ -184,7 +184,7 @@ class FakeVisibility(object):
                 (furby.header.FBOTTOM_MHZ == self.fbottom_MHz)  or
                 True):
 
-                    if furby.header.BW < 0:
+                    if furby.header.BW_MHZ < 0:
                         furby_data = furby_data[::-1, :].copy()
                     furby_data *= self.amplitude_ratio
                     location_of_frb = np.argmax(furby_data[0])
