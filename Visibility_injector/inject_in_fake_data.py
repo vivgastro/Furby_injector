@@ -191,7 +191,8 @@ class FakeVisibility(object):
             else:
                 self.log.debug("furby_header = {0}".format(furby.header), "nf, tsamp_s, ftop_MHz, fbottom_MHz = ",
                 self.plan.nf, self.plan.tsamp_s, self.ftop_MHz, self.fbottom_MHz)
-                raise ValueError("Params for furby_{0} do not match the requested telescope params".format(furby.header.ID))
+                pass
+                #raise ValueError("Params for furby_{0} do not match the requested telescope params".format(furby.header.ID))
 
         elif self.simulate_in_runtime:
 
