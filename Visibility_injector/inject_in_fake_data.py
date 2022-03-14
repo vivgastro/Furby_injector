@@ -13,8 +13,8 @@ def setUpLogging(logfile=None):
 
     logger = logging.getLogger("Visbility_injector")
 
-    stderr_formatter = logging.Formatter("%(name)s - %(level)s: %(msg)s")
-    logfile_formatter = logging.Formatter("%(asctime)s, %(level)s: %(msg)s")
+    stderr_formatter = logging.Formatter("%(name)s - %(levelname)s: %(message)s")
+    logfile_formatter = logging.Formatter("%(asctime)s, %(levelname)s: %(message)s")
 
     consoleHandler = logging.StreamHandler(sys.stderr)
     consoleHandler.setFormatter(stderr_formatter)
