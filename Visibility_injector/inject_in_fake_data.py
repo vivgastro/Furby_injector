@@ -29,6 +29,8 @@ def setUpLogging(logfile=None):
             logger.addHandler(fileHandler)
         except IOError as E:
             raise IOError("Could not enable logging to file: {0}\n".format(logfile), E)
+    
+    return logger
 
     
 class FakeVisibility(object):
