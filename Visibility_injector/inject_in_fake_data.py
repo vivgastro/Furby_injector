@@ -181,7 +181,8 @@ class FakeVisibility(object):
                 (furby.header.NCHAN == self.plan.nf) and
                 (furby.header.TSAMP_US * 1e6 == self.plan.tsamp_s) and
                 (furby.header.FTOP_MHZ == self.ftop_MHz) and
-                (furby.header.FBOTTOM_MHZ == self.fbottom_MHz)  ):
+                (furby.header.FBOTTOM_MHZ == self.fbottom_MHz)  or
+                True):
 
                     if furby.header.BW < 0:
                         furby_data = furby_data[::-1, :].copy()
@@ -191,8 +192,7 @@ class FakeVisibility(object):
             else:
                 self.log.debug("furby_header = {0}".format(furby.header), "nf, tsamp_s, ftop_MHz, fbottom_MHz = ",
                 self.plan.nf, self.plan.tsamp_s, self.ftop_MHz, self.fbottom_MHz)
-                pass
-                #raise ValueError("Params for furby_{0} do not match the requested telescope params".format(furby.header.ID))
+                raise ValueError("Params for furby_{0} do not match the requested telescope params".format(furby.header.ID))
 
         elif self.simulate_in_runtime:
 
