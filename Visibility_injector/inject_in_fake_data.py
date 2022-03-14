@@ -3,14 +3,40 @@ from Furby_p3.sim_furby import get_furby
 from Furby_p3.Furby_reader import Furby_reader
 import yaml
 #import matplotlib.pyplot as plt
-import logging
+import logging, sys
+from logging.handlers import RotatingFileHandler
 
+def setUpLogging(logfile=None):
+    '''
+    Sets up and returns a logger
+    '''
+
+    logger = logging.getLogger("Visbility_injector")
+
+    stderr_formatter = logging.Formatter("%(name)s - %(func)s - %(levelname)s: %(message)s")
+    logfile_formatter = logging.Formatter("%(asctime)s, %(level)s: %(msg)s")
+
+    consoleHandler = logging.StreamHandler(sys.stderr)
+    consoleHandler.setFormatter(stderr_formatter)
+    consoleHandler.setLevel(logging.DEBUG)
+    logger.addHandler(consoleHandler)
+
+    if logfile:
+        try:
+            fileHandler = RotatingFileHandler(logfile, maxBytes=2.0E7, backupCount=2)
+            fileHandler.setFormatter(logfile_formatter)
+            fileHandler.setLevel(logging.DEBUG)
+            logger.addHandler(fileHandler)
+        except IOError as E:
+            raise IOError("Could not enable logging to file: {0}\n".format(logfile), E)
+
+    
 class FakeVisibility(object):
     '''
     Simulates fake visibilities 
     '''
     
-    def __init__(self, plan, injection_params_file, tot_nsamps=None):
+    def __init__(self, plan, injection_params_file, tot_nsamps=None, logfile = None):
         '''
         Initialises all the parameters required for simulating fake
         visibilities, and parses the injection parameters provided.
@@ -38,7 +64,12 @@ class FakeVisibility(object):
             Note - If the requested number of samples is not an
             integral multiple of the plan.nt, then the last block 
             containing a fraction of plan.nt will not be generated.
-
+        
+        logfile : str, optional
+            Log file to which the injection would be logged
+            Give None to disable logging to a file
+            Def = None
+        
         Raises
         ------
         ValueError :
@@ -46,6 +77,7 @@ class FakeVisibility(object):
             incompatible with one another.
 
         '''
+        self.log = setUpLogging(logfile)
         self.plan = plan
         self.ftop_MHz = (self.plan.fmax + self.plan.foff/2) / 1e6
         self.fbottom_MHz = (self.plan.fmin - self.plan.foff/2) / 1e6
@@ -84,7 +116,7 @@ class FakeVisibility(object):
         injection_params_file : str
             Path to the yaml file containing injection params
         '''
-
+        self.log.info("Loading the injection param file")
         with open(injection_params_file) as f:
             self.injection_params = yaml.safe_load(f)
 
@@ -127,6 +159,9 @@ class FakeVisibility(object):
             of the mock FRB
         furby_nsamps : int
             Number of time samples in that furby
+        location_of_frb : int
+            The samp numnber of the peak of the frb in the lowest
+            freq channel
 
         Raises
         ------
@@ -136,7 +171,7 @@ class FakeVisibility(object):
         
         '''
         if self.read_in_runtime:
-            print("Reading fuby from file: {0}".format(self.injection_params['furby_files'][iFRB]))
+            self.log.debug("Reading fuby from file: {0}".format(self.injection_params['furby_files'][iFRB]))
             furby = Furby_reader(self.injection_params['furby_files'][iFRB])
             furby_data = furby.read_data()
 
@@ -157,7 +192,7 @@ class FakeVisibility(object):
         elif self.simulate_in_runtime:
 
             P = self.injection_params['furby_props'][iFRB]
-            print("Simulating {ii}th furby with params:\n{params}".format(ii=iFRB, params=P))
+            self.log.debug("Simulating {ii}th furby with params:\n{params}".format(ii=iFRB, params=P))
             furby_data, furby_header = get_furby(
                 dm=P['dm'],
                 snr=P['snr'],
@@ -214,7 +249,7 @@ class FakeVisibility(object):
         #for iblk in range(self.nblk):
         while True:
             iblk +=1
-            print(f"Block ID: {iblk}, start_samp = {iblk * self.blk_shape[2]}, end_samp = {(iblk+1) * self.blk_shape[2]}")
+            self.log.debug(f"Block ID: {iblk}, start_samp = {iblk * self.blk_shape[2]}, end_samp = {(iblk+1) * self.blk_shape[2]}")
             data_block = np.zeros(self.blk_shape, dtype=np.complex64)
 
             if self.injection_params['add_noise']:
@@ -224,7 +259,7 @@ class FakeVisibility(object):
                 raise RuntimeError(f"The requested injection samp {injection_samp} is too soon.")
             
             if injection_samp >= iblk * self.blk_shape[2] and injection_samp < (iblk + 1) * self.blk_shape[2]:
-                print(f"Injection will start in this block")
+                self.log.debug(f"Injection will start in this block")
                 injecting_here = True
             if injecting_here:
                 injection_start_samp_within_block = max([0, injection_samp - iblk * self.blk_shape[2]])
@@ -232,8 +267,8 @@ class FakeVisibility(object):
                 injection_end_samp_within_block = min([self.blk_shape[2], 
                     injection_samp + current_mock_FRB_NSAMPS - iblk * self.blk_shape[2]])
 
-                print(f"injection_start_samp_within_block = {injection_start_samp_within_block}")
-                print(f"injection_end_samp_within_block = {injection_end_samp_within_block}")
+                self.log.debug(f"injection_start_samp_within_block = {injection_start_samp_within_block}")
+                self.log.debug(f"injection_end_samp_within_block = {injection_end_samp_within_block}")
 
                 samps_to_add_in_this_block = injection_end_samp_within_block - injection_start_samp_within_block
 
@@ -244,11 +279,11 @@ class FakeVisibility(object):
             
             if (injection_samp + current_mock_FRB_NSAMPS-1) >= iblk * self.blk_shape[2] and (injection_samp + current_mock_FRB_NSAMPS-1) < (iblk + 1) * self.blk_shape[2]:
             #if samps_added == current_mock_FRB_NSAMPS:
-                print("This was the last block which had a section of the frb, now onto the next one")
+                self.log.debug("This was the last block which had a section of the frb, now onto the next one")
                 injecting_here = False
                 i_inj += 1
                 if i_inj >= self.n_injections or iblk >= self.max_nblk:
-                    print("This was also the last FRB, so this will be the last block I will yield")
+                    self.log.debug("This was also the last FRB, so this will be the last block I will yield")
                     breaking_point = True
 
                 else:
@@ -258,7 +293,7 @@ class FakeVisibility(object):
                         current_mock_FRB_data, current_mock_FRB_NSAMPS, location_of_peak = self.get_ith_furby(iFRB)
                         samps_added = 0
                         injection_samp = self.injection_params['injection_tsamps'][iFRB] - location_of_peak
-                        print(f"New injection samp will be {injection_samp}")
+                        self.log.debug(f"New injection samp will be {injection_samp}")
 
 
     
