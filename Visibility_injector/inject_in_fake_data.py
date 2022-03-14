@@ -179,9 +179,9 @@ class FakeVisibility(object):
 
             if (
                 (furby.header.NCHAN == self.plan.nf) and
-                (furby.header.TSAMP * 1e-6 == self.plan.tsamp_s) and
-                (furby.header.FTOP == self.ftop_MHz) and
-                (furby.header.FBOTTOM == self.fbottom_MHz)  ):
+                (furby.header.TSAMP_US * 1e6 == self.plan.tsamp_s) and
+                (furby.header.FTOP_MHZ == self.ftop_MHz) and
+                (furby.header.FBOTTOM_MHZ == self.fbottom_MHz)  ):
 
                     if furby.header.BW < 0:
                         furby_data = furby_data[::-1, :].copy()
