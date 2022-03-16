@@ -95,7 +95,7 @@ class FakeVisibility(object):
         self.blk_shape = (plan.nbl, plan.nf, plan.nt)
 
         self.amplitude_ratio =  1/np.sqrt(self.blk_shape[0])
-        
+        self.log.info(f"NBL = {plan.nbl}, Amp ratio = {self.amplitude_ratio}")
         self.n_injections = len(self.injection_params['injection_tsamps'])
 
         self.sort = np.argsort(self.injection_params['injection_tsamps'])
