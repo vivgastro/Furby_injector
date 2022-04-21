@@ -86,9 +86,11 @@ class FakeVisibility(object):
         self.get_injection_params(injection_params_file)
         self.set_furby_gen_mode()
 
-        self.max_nblk = tot_nsamps // plan.nt
+        
         if tot_nsamps is None:
             self.max_nblk = np.inf
+        else:
+            self.max_nblk = tot_nsamps // plan.nt
 
         if self.max_nblk < 1:
             raise ValueError(f"Too few tot_nsamps:{tot_nsamps}. We need to generate at least one block")
