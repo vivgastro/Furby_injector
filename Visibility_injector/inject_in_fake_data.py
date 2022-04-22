@@ -6,6 +6,9 @@ import yaml
 import logging, sys
 from logging.handlers import RotatingFileHandler
 
+#TODO: Remove this line later
+import astropy.units as u
+
 def setUpLogging(logfile=None):
     '''
     Sets up and returns a logger
@@ -84,6 +87,12 @@ class FakeVisibility(object):
         self.ftop_MHz = (self.plan.fmax + self.plan.foff/2) / 1e6
         self.fbottom_MHz = (self.plan.fmin - self.plan.foff/2) / 1e6
         self.get_injection_params(injection_params_file)
+        #Adding an extra line to make sure I parse only floats from plan
+        #TODO remove this later
+        if isinstance(self.plan.tsamp_s, u.Quantity):
+            self.tsamp_s = self.plan.tsamp_s.to('s').value
+        else:
+            self.tsamp_s = self.plan.tsamp_s
         self.set_furby_gen_mode()
 
         
@@ -105,7 +114,7 @@ class FakeVisibility(object):
         self.tel_props_dict = {'ftop': self.ftop_MHz,
                                 'fbottom': self.fbottom_MHz,
                                 'nch': self.plan.nf,
-                                'tsamp': self.plan.tsamp_s,
+                                'tsamp': self.tsamp_s, #TODO - change this back to self.plan.tsamp_s
                                 'name': "FAKE"                                
                             }
         np.random.seed(self.injection_params['seed'])
