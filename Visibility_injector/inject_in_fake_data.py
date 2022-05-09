@@ -215,6 +215,7 @@ class FakeVisibility(object):
                 width=P['width'],
                 tau0=P['tau0'],
                 shape=P['shape'],
+                subsample_phase=P['subsample_phase'],
                 telescope_params=self.tel_props_dict,
                 spectrum_type=P['spectrum'],
                 noise_per_sample=P['noise_per_sample'] )
