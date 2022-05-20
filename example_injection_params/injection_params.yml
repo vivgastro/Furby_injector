@@ -7,9 +7,9 @@ injection_tsamps:
     - 4000
 
 injection_coords:
-    - 0
-    - 0
-    - 0
+    - [0.0, -30.0]
+    - [0.0, -30.0]
+    - [0.0, -30.0]
 
 #furby_files:
 #    - /Users/gup037/Codes/Furby_install/temp_database/furby_07347
