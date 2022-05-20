@@ -1,6 +1,8 @@
 import numpy as np
 from Furby_p3.sim_furby import get_furby
 from Furby_p3.Furby_reader import Furby_reader
+from Visibility_injector.simulate_vis import gen_dispersed_vis_1PS_from_plan as gen_vis
+
 import yaml
 #import matplotlib.pyplot as plt
 import logging, sys
@@ -259,7 +261,9 @@ class FakeVisibility(object):
         iFRB = self.sort[i_inj]
         iblk = -1
         current_mock_FRB_data, current_mock_FRB_NSAMPS, location_of_peak = self.get_ith_furby(iFRB)
-
+        current_mock_FRB_vis = gen_vis(src_ra = self.injection_params['injection_coord'][iFRB][0], 
+                                        src_dec = self.injection_params['injection_coord'][iFRB][1], 
+                                        dynamic_spectrum=current_mock_FRB_data)
         samps_added = 0
         injection_samp = self.injection_params['injection_tsamps'][iFRB] - location_of_peak
 
@@ -289,8 +293,8 @@ class FakeVisibility(object):
 
                 samps_to_add_in_this_block = injection_end_samp_within_block - injection_start_samp_within_block
 
-                data_block[:, :, injection_start_samp_within_block : injection_end_samp_within_block].real += \
-                    current_mock_FRB_data[:, samps_added : samps_added + samps_to_add_in_this_block]
+                data_block[:, :, injection_start_samp_within_block : injection_end_samp_within_block] += \
+                    current_mock_FRB_vis[:, :, samps_added : samps_added + samps_to_add_in_this_block]
 
                 samps_added += samps_to_add_in_this_block
             
@@ -308,6 +312,10 @@ class FakeVisibility(object):
 
                     if i_inj < self.n_injections:
                         current_mock_FRB_data, current_mock_FRB_NSAMPS, location_of_peak = self.get_ith_furby(iFRB)
+                        current_mock_FRB_vis = gen_vis(src_ra = self.injection_params['injection_coord'][iFRB][0], 
+                                                    src_dec = self.injection_params['injection_coord'][iFRB][1], 
+                                                    dynamic_spectrum=current_mock_FRB_data)
+                                                    
                         samps_added = 0
                         injection_samp = self.injection_params['injection_tsamps'][iFRB] - location_of_peak
                         self.log.info(f"New injection samp will be {injection_samp}")
