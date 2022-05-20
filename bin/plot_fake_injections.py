@@ -44,7 +44,7 @@ plan = FakePlan()
 
 def main(args):
     injections_params_file = args.inj_params
-    FV = FakeVisibility(plan, tot_nsamps = int(0.6e4),  injection_params_file = injections_params_file)
+    FV = FakeVisibility(plan, tot_nsamps = None,  injection_params_file = injections_params_file)
     block_gen = FV.get_fake_data_block
 
     for ii, block in enumerate(FV.get_fake_data_block()):
