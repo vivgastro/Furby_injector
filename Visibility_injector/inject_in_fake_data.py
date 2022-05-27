@@ -263,7 +263,7 @@ class FakeVisibility(object):
         current_mock_FRB_data, current_mock_FRB_NSAMPS, location_of_peak = self.get_ith_furby(iFRB)
         current_mock_FRB_vis = gen_vis(self.plan, src_ra_deg = self.injection_params['injection_coords'][iFRB][0], 
                                         src_dec_deg = self.injection_params['injection_coords'][iFRB][1], 
-                                        dynamic_spectrum=current_mock_FRB_data)
+                                        dynamic_spectrum=current_mock_FRB_data.T)
         samps_added = 0
         injection_samp = self.injection_params['injection_tsamps'][iFRB] - location_of_peak
 
@@ -314,7 +314,7 @@ class FakeVisibility(object):
                         current_mock_FRB_data, current_mock_FRB_NSAMPS, location_of_peak = self.get_ith_furby(iFRB)
                         current_mock_FRB_vis = gen_vis(self.plan, src_ra_deg = self.injection_params['injection_coords'][iFRB][0], 
                                                     src_dec_deg = self.injection_params['injection_coords'][iFRB][1], 
-                                                    dynamic_spectrum=current_mock_FRB_data)
+                                                    dynamic_spectrum=current_mock_FRB_data.T)
 
                         samps_added = 0
                         injection_samp = self.injection_params['injection_tsamps'][iFRB] - location_of_peak
