@@ -173,7 +173,7 @@ class FakeVisibility(object):
         Converts requested pixel upix and vpix coordinates to
         the sky values (RA and DEC)
         '''
-        ra, dec = self.plab.wcs.pixel_to_world(ra, dec)
+        ra, dec = self.plan.wcs.pixel_to_world(ra, dec)
         return ra, dec
 
     def convert_inj_width_s_to_samps(self, w_s):
