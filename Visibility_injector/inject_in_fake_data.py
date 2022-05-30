@@ -88,13 +88,14 @@ class FakeVisibility(object):
         self.plan = plan
         self.ftop_MHz = (self.plan.fmax + self.plan.foff/2) / 1e6
         self.fbottom_MHz = (self.plan.fmin - self.plan.foff/2) / 1e6
-        self.get_injection_params(injection_params_file)
         #Adding an extra line to make sure I parse only floats from plan
         #TODO remove this later
         if isinstance(self.plan.tsamp_s, u.Quantity):
             self.tsamp_s = self.plan.tsamp_s.to('s').value
         else:
             self.tsamp_s = self.plan.tsamp_s
+        self.get_injection_params(injection_params_file)
+
         self.set_furby_gen_mode()
 
         
