@@ -122,6 +122,78 @@ class FakeVisibility(object):
         np.random.seed(self.injection_params['seed'])
 
         
+    def convert_dm_samps_to_pccc(self, dm_samps):
+        '''
+        Converts DM from samp units to pc/cc
+        '''
+        #DM equation => delta_t = D * dm * (1 / f1**2 - 1 / f2**2)
+        #So, dm = delta_t / (D * (f1**-2  - f2**-2)
+
+        delta_t = dm_samps * self.plan.tsamp_s
+        D = 4.14881e6    #ms, needs freqs to be in MHz, output delays in ms   #From Pulsar Handbook 
+        DM_pccc = (delta_t * 1e3) / (D * (self.fbottom_MHz**-2 - self.ftop_MHz**-2))
+        return DM_pccc
+
+    def convert_dm_pccc_to_samps(self, dm_pccc):
+        '''
+        Converts DM from pccc to samps
+        '''
+        D = 4.14881e6   #ms, needs freqs to be in MHz, output delays in ms #From Pulsat Handbook
+        delta_t_ms = dm_pccc * D * (self.fbottom_MHz**-2 - self.ftop_MHz**-2)      #ms
+        delta_t_s = delta_t_ms * 1e-3
+        delta_t_samps = np.rint(delta_t_s / self.plan.tsamp_s).astype('int')
+
+        return delta_t_samps
+
+
+    def convert_inj_tstamp_s_to_samps(self, tstamp):
+        '''
+        Converts injection tstamp (in seconds) to samps
+        '''
+        injection_samp = np.rint(tstamp / self.plan.tsamp).astype('int')
+        return injection_samp
+
+    def convert_inj_tstamp_samp_to_s(self, tstamp_samp):
+        '''
+        Converts injection tstamp in samps to seconds
+        '''
+        injection_samp_s = tstamp_samp * self.plan.tsamp_s
+        return injection_samp_s
+
+    def convert_inj_ra_dec_to_upix_vpix(self, ra, dec):
+        '''
+        Converts requested RA and DEC (in degrees) to expected
+        pixel coordinate in the image
+        '''
+        upix, vpix = self.plan.wcs.world_to_pixel(self, ra,dec)
+        return upix, vpix
+    
+    def convert_inj_upix_vpix_to_ra_dec(self, upix, vpix):
+        '''
+        Converts requested pixel upix and vpix coordinates to
+        the sky values (RA and DEC)
+        '''
+        ra, dec = self.plab.wcs.pixel_to_world(ra, dec)
+        return ra, dec
+
+    def convert_inj_width_s_to_samps(self, w_s):
+        '''
+        Converts the requested inj width (in s) to samps
+        '''
+        return w_s / self.plan.tsamp_s
+
+    def convert_inj_width_samps_to_s(self, w_samps):
+        '''
+        Converts the requested inj width (in samps) to s
+        '''
+        return w_samps * self.plan.tsamp_s
+
+    def convert_tau0_samps_to_s(self, tau0_samps):
+        '''
+        Converts the requested tau0 (in samps) to seconds
+        '''
+        return tau0_samps * self.plan.tsamp_s
+
     def get_injection_params(self, injection_params_file):
         '''
         Parses the injection parametes yaml file 
@@ -134,6 +206,54 @@ class FakeVisibility(object):
         self.log.info("Loading the injection param file")
         with open(injection_params_file) as f:
             self.injection_params = yaml.safe_load(f)
+
+        if 'injection_pixels' in self.injection_params:
+            self.injection_params['injection_coords'] = [self.convert_inj_upix_vpix_to_ra_dec(ii[0], ii[1]) for ii in self.injection_params['injection_pixels']]
+
+        #This is a patch to support older injection yaml files where injection coord was specified as 0.0
+        for ii, coord_pair in enumerate(self.injection_params['injection_coords']):
+            if isinstance(coord_pair, 'float') and coord_pair == 0.0:
+                    self.injection_params['injection_coords'][ii] == [self.plan.ra.to('deg').value, self.plan.dec.to('deg').value]
+
+        
+        prop_defaults = {
+                            'shape': 'tophat',
+                            'spectrum_type': 'flat',
+                            'dmsmear': True,
+                            'subsample_phase': 0.5,
+                            'noise_per_sample': 1.0,
+                            'tfactor': 100,
+                            'tot_nsamps': None,
+                            'scattering_index': 4.4
+        }
+        self.injection_params['parsed_furby_props'] = []
+
+        for prop in self.injection_params['furby_props']:
+            
+            parsed_prop = prop_defaults.copy()
+            parsed_prop['snr'] = prop['snr']
+            
+            if 'width_samps' in prop:
+                parsed_prop['width'] = self.convert_inj_width_samps_to_s(prop['width_samps'])
+            else:
+                parsed_prop['width'] = prop['width']
+            if 'dm_samps' in prop:
+                parsed_prop['dm'] = self.convert_dm_samps_to_pccc(prop['dm_samps'])
+            else:
+                parsed_prop['dm'] = prop['dm']
+            if 'tau0_samps' in prop:
+                parsed_prop['tau0'] = self.convert_tau0_samps_to_s(prop['tau0_samps'])
+            else:
+                parsed_prop['tau0'] = prop['tau0']
+
+            for iprop in prop_defaults.keys():
+                if iprop in prop.keys():
+                    parsed_prop[iprop] = prop[iprop]
+            
+            self.injection_params['parsed_furby_props'].append(parsed_prop)
+            
+
+
 
     def set_furby_gen_mode(self):
         '''
@@ -209,18 +329,10 @@ class FakeVisibility(object):
 
         elif self.simulate_in_runtime:
 
-            P = self.injection_params['furby_props'][iFRB]
+            P = self.injection_params['parsed_furby_props'][iFRB]
             self.log.info("Simulating {ii}th furby with params:\n{params}".format(ii=iFRB, params=P))
-            furby_data, furby_header = get_furby(
-                dm=P['dm'],
-                snr=P['snr'],
-                width=P['width'],
-                tau0=P['tau0'],
-                shape=P['shape'],
-                subsample_phase=P['subsample_phase'],
-                telescope_params=self.tel_props_dict,
-                spectrum_type=P['spectrum'],
-                noise_per_sample=P['noise_per_sample'] )
+
+            furby_data, furby_header = get_furby(**P)
             furby_data = furby_data[::-1, :].copy() * self.amplitude_ratio
             location_of_frb = np.argmax(furby_data[0])
             return furby_data, furby_header['NSAMPS'], location_of_frb
