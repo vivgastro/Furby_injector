@@ -59,22 +59,22 @@ if __name__ == '__main__':
     
     g1 = a.add_mutually_exclusive_group()
     g1.add_argument('-dm', type=float, nargs=2, help = "DM range endpoints [pc/cc] (e.g. 10, 12; def=0,0)", default=[0, 0])
-    g1.add_argument('-dm_samps', type=float, nargs=2, help = "DM range endpoints [samps] (e.g. 0, 1.5; def=0,0)", default=[0, 0])
+    g1.add_argument('-dm_samps', type=float, nargs=2, help = "DM range endpoints [samps] (e.g. 0, 1.5; def=0,0)")
     
     g2 = a.add_mutually_exclusive_group()
     g2.add_argument('-width', type=float, nargs=2, help = "width range endpoints [s] (e.g. 0.0001, 0.0002; def=0.0017,0.0017)", default=[0.0017, 0.0017])
-    g2.add_argument('-width_samps', type=float, nargs=2, help = "width range endpoints [samps] (e.g. 0.1, 2; def=1,1)", default=[1, 1])
+    g2.add_argument('-width_samps', type=float, nargs=2, help = "width range endpoints [samps] (e.g. 0.1, 2; def=1,1)")
     
     a.add_argument('-tstamp', type=int, nargs = 2, help = "Injection tstamp [samples] range endpoints (e.g. 100, 200; def = 100, 1000)", default =[100, 1000])
     a.add_argument('-subsample_phase', type=float, nargs=2, help="Subsample phase of the centre of the FRB (def:0.5)", default=[0.5, 0.5])
     
     g3 = a.add_mutually_exclusive_group()
     g3.add_argument('-ra', type=float, nargs=2, help="Injection RA range", default=[0.0, 0.0])
-    g3.add_argument('-injection_upix', type=float, nargs = 2, help="Injection upix range (e.g. 128, 130.5); def=[128, 128]", default=[128, 128])
+    g3.add_argument('-injection_upix', type=float, nargs = 2, help="Injection upix range (e.g. 128, 130.5); def=[128, 128]")
 
     g4 = a.add_mutually_exclusive_group()
     g4.add_argument('-dec', type=float, nargs=2, help="Injection DEC range", default=[-30.0, -30.0])    
-    g4.add_argument('-injection_vpix', type=float, nargs = 2, help="Injection vpix range (e.g. 128, 130.5); def=[128, 128]", default=[128, 128])
+    g4.add_argument('-injection_vpix', type=float, nargs = 2, help="Injection vpix range (e.g. 128, 130.5); def=[128, 128]")
 
     a.add_argument('-add_noise', action='store_true', help="Add noise? (def = False)", default= False)
     a.add_argument('-seed', type = int, help="Seed (def = 777)", default=777)
