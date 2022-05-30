@@ -21,7 +21,7 @@ def main(args):
 
     for ii, block in enumerate(FV.get_fake_data_block()):
         plt.figure()
-        plt.imshow(np.abs(block).sum(axis=0), aspect='auto')
+        plt.imshow(np.abs(block).sum(axis=0), aspect='auto', interpolation='None')
         plt.title(f"Block = {ii}")
         plt.show()
 
