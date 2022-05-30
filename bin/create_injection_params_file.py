@@ -9,7 +9,7 @@ def main(args):
     if args.injection_upix is None:
         injection_ra = np.linspace(args.ra[0], args.ra[1], args.num, endpoint=True)
     else:
-        injection_upixs = np.linspace(args.upix[0], args.upix[1], args.num, endpoint=True)
+        injection_upixs = np.linspace(args.injection_upix[0], args.injection_upix[1], args.num, endpoint=True)
 
     if args.injection_vpix is None:
          injection_dec = np.linspace(args.dec[0], args.dec[1], args.num, endpoint=True)
