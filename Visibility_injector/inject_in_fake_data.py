@@ -129,7 +129,7 @@ class FakeVisibility(object):
         #DM equation => delta_t = D * dm * (1 / f1**2 - 1 / f2**2)
         #So, dm = delta_t / (D * (f1**-2  - f2**-2)
 
-        delta_t = dm_samps * self.plan.tsamp_s
+        delta_t = dm_samps * self.tsamp_s
         D = 4.14881e6    #ms, needs freqs to be in MHz, output delays in ms   #From Pulsar Handbook 
         DM_pccc = (delta_t * 1e3) / (D * (self.fbottom_MHz**-2 - self.ftop_MHz**-2))
         return DM_pccc
@@ -141,7 +141,7 @@ class FakeVisibility(object):
         D = 4.14881e6   #ms, needs freqs to be in MHz, output delays in ms #From Pulsat Handbook
         delta_t_ms = dm_pccc * D * (self.fbottom_MHz**-2 - self.ftop_MHz**-2)      #ms
         delta_t_s = delta_t_ms * 1e-3
-        delta_t_samps = np.rint(delta_t_s / self.plan.tsamp_s).astype('int')
+        delta_t_samps = np.rint(delta_t_s / self.tsamp_s).astype('int')
 
         return delta_t_samps
 
@@ -157,7 +157,7 @@ class FakeVisibility(object):
         '''
         Converts injection tstamp in samps to seconds
         '''
-        injection_samp_s = tstamp_samp * self.plan.tsamp_s
+        injection_samp_s = tstamp_samp * self.tsamp_s
         return injection_samp_s
 
     def convert_inj_ra_dec_to_upix_vpix(self, ra, dec):
@@ -180,19 +180,19 @@ class FakeVisibility(object):
         '''
         Converts the requested inj width (in s) to samps
         '''
-        return w_s / self.plan.tsamp_s
+        return w_s / self.tsamp_s
 
     def convert_inj_width_samps_to_s(self, w_samps):
         '''
         Converts the requested inj width (in samps) to s
         '''
-        return w_samps * self.plan.tsamp_s
+        return w_samps * self.tsamp_s
 
     def convert_tau0_samps_to_s(self, tau0_samps):
         '''
         Converts the requested tau0 (in samps) to seconds
         '''
-        return tau0_samps * self.plan.tsamp_s
+        return tau0_samps * self.tsamp_s
 
     def get_injection_params(self, injection_params_file):
         '''
@@ -312,7 +312,7 @@ class FakeVisibility(object):
 
             if (
                 (furby.header.NCHAN == self.plan.nf) and
-                (furby.header.TSAMP_US * 1e6 == self.plan.tsamp_s) and
+                (furby.header.TSAMP_US * 1e6 == self.tsamp_s) and
                 (furby.header.FTOP_MHZ == self.ftop_MHz) and
                 (furby.header.FBOTTOM_MHZ == self.fbottom_MHz)  or
                 True):
@@ -324,7 +324,7 @@ class FakeVisibility(object):
                     return furby_data, furby.header.NSAMPS, location_of_frb
             else:
                 self.log.info("furby_header = {0}".format(furby.header), "nf, tsamp_s, ftop_MHz, fbottom_MHz = ",
-                self.plan.nf, self.plan.tsamp_s, self.ftop_MHz, self.fbottom_MHz)
+                self.plan.nf, self.tsamp_s, self.ftop_MHz, self.fbottom_MHz)
                 raise ValueError("Params for furby_{0} do not match the requested telescope params".format(furby.header.ID))
 
         elif self.simulate_in_runtime:
