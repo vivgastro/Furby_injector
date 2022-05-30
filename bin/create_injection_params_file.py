@@ -6,9 +6,24 @@ def main(args):
     seed = args.seed
     add_noise = args.add_noise
 
-    injection_ra = np.linspace(args.ra[0], args.ra[1], args.num, endpoint=True)
-    injection_dec = np.linspace(args.dec[0], args.dec[1], args.num, endpoint=True)
-    injection_coords = np.array([  [injection_ra[ii], injection_dec[ii]]  for ii in range(args.num)])
+    if args.injection_upix is None:
+        injection_ra = np.linspace(args.ra[0], args.ra[1], args.num, endpoint=True)
+    else:
+        injection_upixs = np.linspace(args.upix[0], args.upix[1], args.num, endpoint=True)
+
+    if args.injection_vpix is None:
+         injection_dec = np.linspace(args.dec[0], args.dec[1], args.num, endpoint=True)
+    else:
+        injection_vpixs = np.linspace(args.injection_vpix[0], args.injection_vpix[1], args.num, endpoint=True)
+    
+    if (args.injection_upix is None) or (args.injection_vpix is None):
+        injection_coords = np.array([  [injection_ra[ii], injection_dec[ii]]  for ii in range(args.num)])
+        coord_key = 'injection_coords'
+        coord_val = injection_coords
+    else:
+        injection_pixels = np.array([   [injection_upixs[ii], injection_vpixs[ii]] for ii in range(args.num)  ])
+        coord_key = 'injection_pixels'
+        coord_val = injection_pixels
 
     injection_taus = np.zeros(args.num) + 1e-16
     injection_spectra = np.array([r'flat'] * args.num)
@@ -20,20 +35,38 @@ def main(args):
     injection_tstamps = (1 + np.arange(args.num)*2) * 256 - 4
     #injection_tstamps = (1 + np.arange(args.num)*2) * 256 - np.arange(args.num)
     injection_snrs = np.linspace(args.snr[0], args.snr[1], args.num, endpoint = True)
-    injection_widths = np.linspace(args.width[0], args.width[1], args.num, endpoint = True)
-    injection_dms = np.linspace(args.dm[0], args.dm[1], args.num, endpoint = True)
+
+    if args.width_samps is None:
+        injection_widths = np.linspace(args.width[0], args.width[1], args.num, endpoint = True)
+        width_key = 'width'
+        width_val = injection_widths
+    else:
+        injection_width_samps = np.linspace(args.width_samps[0], args.width_samps[1], args.num, endpoint=True)
+        width_key = 'width_samps'
+        width_val = injection_width_samps
+        
+
+    if args.dm_samps is None:
+        injection_dms = np.linspace(args.dm[0], args.dm[1], args.num, endpoint = True)
+        dm_key = 'dm'
+        dm_val = injection_dms
+    else:
+        injection_dm_samps = np.linspace(args.dm_samps[0], args.dm_samps[1], args.num, endpoint=True)
+        dm_key = 'dm_samps'
+        dm_val = injection_dm_samps
+
     injection_subsample_phases = np.linspace(args.subsample_phase[0], args.subsample_phase[1], args.num, endpoint=True)
 
     params = {
             'seed': seed,
             'add_noise' : add_noise,
             'injection_tsamps' : injection_tstamps.tolist(),
-            'injection_coords' : injection_coords.tolist(),
+            coord_key : coord_val.tolist(),
             
             'furby_props' : [
                                 {'snr': float(injection_snrs[ii]),
-                                 'width': float(injection_widths[ii]),
-                                 'dm': float(injection_dms[ii]),
+                                 width_key: float(width_val[ii]),
+                                 dm_key: float(dm_val[ii]),
                                  'tau0': float(injection_taus[ii]),
                                  'spectrum' : str(injection_spectra[ii]),
                                  'noise_per_sample': float(injection_noise_per_sample[ii]),
