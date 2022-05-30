@@ -212,7 +212,7 @@ class FakeVisibility(object):
 
         #This is a patch to support older injection yaml files where injection coord was specified as 0.0
         for ii, coord_pair in enumerate(self.injection_params['injection_coords']):
-            if isinstance(coord_pair, 'float') and coord_pair == 0.0:
+            if isinstance(coord_pair, float) and coord_pair == 0.0:
                     self.injection_params['injection_coords'][ii] == [self.plan.ra.to('deg').value, self.plan.dec.to('deg').value]
 
         
