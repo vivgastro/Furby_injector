@@ -114,7 +114,6 @@ if __name__ == '__main__':
     a.add_argument('-outfile', type=str, help = "Path to the output file (def = './auto_inj_params.yml')", default = "./auto_inj_params.yml")
 
     args = a.parse_args()
-    print(args)
     main(args)
 
 
