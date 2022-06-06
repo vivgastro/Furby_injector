@@ -20,7 +20,7 @@ def main(args):
     block_gen = FV.get_fake_data_block
 
     for ii, block in enumerate(FV.get_fake_data_block()):
-        fig = plt.figure(figsize=(10, 20))
+        fig = plt.figure(figsize=(20, 10))
         ax1 = fig.add_subplot(221)
         ax1.imshow(block.real.sum(axis=0), aspect='auto', interpolation='None')
         ax1.set_title("Real")
