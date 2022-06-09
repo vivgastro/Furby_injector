@@ -1,11 +1,7 @@
 from __future__ import division, print_function, absolute_import
-import sys
-import numpy.linalg as LA
-import warnings, copy
+import copy
 import numpy as NP
 from pyuvdata import UVData
-import pyuvdata.parameter as UVP
-from astropy.time import Time, TimeDelta
 from astropy.coordinates import SkyCoord, AltAz, ICRS, FK5, EarthLocation, Longitude
 from astropy import units as U
 from astropy import constants as FC
@@ -14,9 +10,6 @@ from astropy.wcs import WCS
 from craft.craco_plan import PipelinePlan
 from craft import uvfits
 from craft.craco import bl2ant
-from craco import visibility_inject_pulse as VIP
-
-import matplotlib.pyplot as PLT
 
 ################################################################################
 
