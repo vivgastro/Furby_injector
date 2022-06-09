@@ -2,3 +2,5 @@ Visibility_injector.egg-info
 Visibility_injector/__pycache__
 .*.swp
 *.pyc
+uv_data.*.txt
+*/uv_data.*.txt
