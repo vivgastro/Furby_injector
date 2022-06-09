@@ -35,6 +35,7 @@ def dircos_from_wcs(coords, wcs):
         raise TypeError('Input coords must be an instance of class astrop.coordinates.SkyCoord')
         
     xy_pix = wcs.all_world2pix(NP.hstack([coords.ra.deg.reshape(-1,1), coords.dec.deg.reshape(-1,1)]), 1)
+    print("PIxel values = ", xy_pix)
     xy_pix = xy_pix.reshape(-1,2)
     x = xy_pix[:,0]
     y = xy_pix[:,1]
@@ -44,7 +45,7 @@ def dircos_from_wcs(coords, wcs):
     m = NP.sin(NP.radians(theta_y))
     n = NP.sqrt(1-(l**2+m**2))
     dircos = NP.hstack([l.reshape(-1,1), m.reshape(-1,1), n.reshape(-1,1)])
-    
+    print("DIRCOS here", dircos) 
     return dircos
 
 ################################################################################
@@ -146,7 +147,7 @@ def get_bl_from_plan(plan):
 
 ################################################################################
 
-def genvis_1PS(blvec, src_dircos, fvec, apparent_stokes_intensity=None, ignore_w=False):
+def genvis_1PS(blvec, src_dircos, fvec, apparent_stokes_intensity=None, ignore_w=True):
     
     """
     ----------------------------------------------------------------------------
@@ -216,7 +217,7 @@ def genvis_1PS(blvec, src_dircos, fvec, apparent_stokes_intensity=None, ignore_w
 
 ################################################################################
 
-def genvis_1PS_at_phase_center(blvec, fvec, apparent_stokes_intensity=None, ignore_w=False):
+def genvis_1PS_at_phase_center(blvec, fvec, apparent_stokes_intensity=None, ignore_w=True):
     
     """
     ----------------------------------------------------------------------------
@@ -296,7 +297,7 @@ def genvis_1PS_from_plan(plan, src_ra_deg, src_dec_deg, apparent_stokes_intensit
     """
         
     blid, antpair, blvec = get_bl_from_plan(plan)
-    src_coord = SkyCoord(ra=NP.asarray(src_ra_deg).reshape(-1)*U.deg, dec=NP.asarray(src_dec_deg).reshape(-1)*U.deg, frame='icrs')
+    src_coord = SkyCoord(ra=NP.asarray(src_ra_deg).reshape(-1)*U.deg, dec=NP.asarray(src_dec_deg).reshape(-1)*U.deg, frame='fk5')
     src_dircos = dircos_from_wcs(src_coord, plan.wcs)
     fvec = plan.freqs
     vis = genvis_1PS(blvec, src_dircos, fvec, apparent_stokes_intensity=apparent_stokes_intensity, ignore_w=ignore_w)
@@ -365,7 +366,7 @@ def genvis_1PS_from_dynamic_spectrum(vis_1ps_static, dynamic_spectrum, spwind=0,
 
 ################################################################################
 
-def gen_dispersed_vis_1PS_from_plan(plan, src_ra_deg, src_dec_deg, dynamic_spectrum, apparent_stokes_intensity=None, ignore_w=False, spwind=0, polind=0, outfmt='craco'):
+def gen_dispersed_vis_1PS_from_plan(plan, src_ra_deg, src_dec_deg, dynamic_spectrum, apparent_stokes_intensity=None, ignore_w=True, spwind=0, polind=0, outfmt='craco'):
 
     """
     ----------------------------------------------------------------------------
@@ -417,12 +418,38 @@ def gen_dispersed_vis_1PS_from_plan(plan, src_ra_deg, src_dec_deg, dynamic_spect
             outfmt='uvdata'
     ----------------------------------------------------------------------------
     """            
-    
+   
+    print(f"Requested ra_deg = {src_ra_deg}, dec_deg = {src_dec_deg}")
     vis_1ps_static = genvis_1PS_from_plan(plan, src_ra_deg, src_dec_deg, apparent_stokes_intensity=apparent_stokes_intensity, ignore_w=ignore_w)
     vis_dynamic = genvis_1PS_from_dynamic_spectrum(vis_1ps_static, dynamic_spectrum, spwind=spwind, polind=polind, outfmt=outfmt)
     return vis_dynamic
 
 ################################################################################
+
+
+def convert_cube_to_dict(plan, vis):
+    '''
+    Converts the visibility into a dict with plan blids as keys, and vis data as values
+    Input
+    -----
+    plan: craco.PipelinePlan object
+    vis: np.ndarray
+         [nbl, nfreqs, ntimes]
+
+    Returns
+    -------
+    vis_dict: dict
+        Dictionary containing blid, visibility pair, ordered by the plan.baselines() order
+    '''
+    
+    blids, antpairs, blvecs = get_bl_from_plan(plan)
+    vis_dict = {}
+    for ii, ibl in enumerate(blids):
+        vis_dict[ibl] = vis[ii]
+
+    return vis_dict
+
+
 
 """
 Example:
