@@ -31,8 +31,8 @@ def main(args):
     injection_shapes = np.array([r'tophat'] * args.num)
 
     #injection_tstamps = np.linspace(args.tstamp[0], args.tstamp[1], args.num, endpoint = True)
-    #injection_tstamps = (1 + np.arange(args.num)) * 256 - 20
-    injection_tstamps = (1 + np.arange(args.num)*2) * 256 - 4
+    injection_tstamps = (1 + np.arange(args.num) * args.blockstep) * 256 - args.toff + args.blockoff * 256
+    #injection_tstamps = (1 + np.arange(args.num)*2) * 256 - 4
     #injection_tstamps = (1 + np.arange(args.num)*2) * 256 - np.arange(args.num)
     injection_snrs = np.linspace(args.snr[0], args.snr[1], args.num, endpoint = True)
 
@@ -99,6 +99,9 @@ if __name__ == '__main__':
     g2.add_argument('-width_samps', type=float, nargs=2, help = "width range endpoints [samps] (e.g. 0.1, 2; def=1,1)")
     
     a.add_argument('-tstamp', type=int, nargs = 2, help = "Injection tstamp [samples] range endpoints (e.g. 100, 200; def = 100, 1000)", default =[100, 1000])
+    a.add_argument('-blockoff', type=int, help="Offset the start of injection by these many blocks (def =0)", default=0)
+    a.add_argument('-blockstep', type=int, help="How many blocks to increment between injections. 1 means injections will be put in adjacent blocks (def =1)", default=1)
+    a.add_argument('-toff', type=int, help="Time offset of the injection within the block (from right edge) (def=4)", default=4)
     a.add_argument('-subsample_phase', type=float, nargs=2, help="Subsample phase of the centre of the FRB (def:0.5)", default=[0.5, 0.5])
     
     g3 = a.add_mutually_exclusive_group()

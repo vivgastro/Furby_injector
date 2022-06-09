@@ -132,7 +132,10 @@ class FakeVisibility(object):
 
         delta_t = dm_samps * self.tsamp_s
         D = 4.14881e6    #ms, needs freqs to be in MHz, output delays in ms   #From Pulsar Handbook 
-        DM_pccc = (delta_t * 1e3) / (D * (self.fbottom_MHz**-2 - self.ftop_MHz**-2))
+        ftop = self.ftop_MHz - (self.plan.foff / 2e6)
+        print("\n\n\n\nTHIS IS THE CHANGED CODEEEEE\n\n\n\n")
+        fbottom = self.fbottom_MHz + (self.plan.foff / 2e6)
+        DM_pccc = (delta_t * 1e3) / (D * (fbottom**-2 - ftop**-2))
         return DM_pccc
 
     def convert_dm_pccc_to_samps(self, dm_pccc):
@@ -140,8 +143,11 @@ class FakeVisibility(object):
         Converts DM from pccc to samps
         '''
         D = 4.14881e6   #ms, needs freqs to be in MHz, output delays in ms #From Pulsat Handbook
-        delta_t_ms = dm_pccc * D * (self.fbottom_MHz**-2 - self.ftop_MHz**-2)      #ms
+        ftop = self.ftop_MHz - (self.plan.foff / 2e6)
+        fbottom = self.fbottom_MHz + (self.plan.foff / 2e6)
+        delta_t_ms = dm_pccc * D * (fbottom**-2 - ftop**-2)      #ms
         delta_t_s = delta_t_ms * 1e-3
+        print("\n\n\n\nTHIS IS THE CHANGED CODEEEEE\n\n\n\n")
         delta_t_samps = np.rint(delta_t_s / self.tsamp_s).astype('int')
 
         return delta_t_samps
@@ -174,8 +180,8 @@ class FakeVisibility(object):
         Converts requested pixel upix and vpix coordinates to
         the sky values (RA and DEC)
         '''
-        ra, dec = self.plan.wcs.pixel_to_world(upix, vpix)
-        return ra, dec
+        coords = self.plan.wcs.pixel_to_world(upix, vpix)
+        return coords.ra.deg, coords.dec.deg
 
     def convert_inj_width_s_to_samps(self, w_s):
         '''
@@ -356,6 +362,11 @@ class FakeVisibility(object):
         data_block.imag = np.random.randn(*data_block.imag.shape)
 
 
+    def gen_no_vis(self, dyn_spectrum):
+        outblock = np.zeros((self.blk_shape[0], dyn_spectrum.shape[0], dyn_spectrum.shape[1]), dtype=np.complex64)
+        outblock[:].real = dyn_spectrum
+        return outblock
+
     def get_fake_data_block(self):
         '''
         Gets data blocks containing fake noise and injected furbys.
@@ -374,9 +385,10 @@ class FakeVisibility(object):
         iFRB = self.sort[i_inj]
         iblk = -1
         current_mock_FRB_data, current_mock_FRB_NSAMPS, location_of_peak = self.get_ith_furby(iFRB)
+        #current_mock_FRB_vis = self.gen_no_vis(current_mock_FRB_data)
         current_mock_FRB_vis = gen_vis(self.plan, src_ra_deg = self.injection_params['injection_coords'][iFRB][0], 
-                                        src_dec_deg = self.injection_params['injection_coords'][iFRB][1], 
-                                        dynamic_spectrum=current_mock_FRB_data.T)
+                                       src_dec_deg = self.injection_params['injection_coords'][iFRB][1], 
+                                       dynamic_spectrum=current_mock_FRB_data.T)
         samps_added = 0
         injection_samp = self.injection_params['injection_tsamps'][iFRB] - location_of_peak
 
@@ -425,6 +437,7 @@ class FakeVisibility(object):
 
                     if i_inj < self.n_injections:
                         current_mock_FRB_data, current_mock_FRB_NSAMPS, location_of_peak = self.get_ith_furby(iFRB)
+                        #current_mock_FRB_vis = self.gen_no_vis(current_mock_FRB_data)
                         current_mock_FRB_vis = gen_vis(self.plan, src_ra_deg = self.injection_params['injection_coords'][iFRB][0], 
                                                     src_dec_deg = self.injection_params['injection_coords'][iFRB][1], 
                                                     dynamic_spectrum=current_mock_FRB_data.T)
