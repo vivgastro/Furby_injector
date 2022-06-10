@@ -1,0 +1,6 @@
+vis      = "inj_frb_d0_t0_a1_sninf_lm00_off_pc_1_1.miriaduv"
+map      = "inj_frb_d0_t0_a1_sninf_lm00_off_pc_1_1.imap"
+beam     = "inj_frb_d0_t0_a1_sninf_lm00_off_pc_1_1.ibeam"
+imsize   = 256
+cell     = 20,20
+options  = "mfs"

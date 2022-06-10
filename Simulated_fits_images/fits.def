@@ -1,0 +1,3 @@
+in       = "inj_frb_d0_t0_a1_sninf_lm00_off_pc_1_1.uvfits"
+op       = "uvin"
+out      = "inj_frb_d0_t0_a1_sninf_lm00_off_pc_1_1.miriaduv"
