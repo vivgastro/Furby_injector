@@ -133,7 +133,7 @@ class FakeVisibility(object):
         delta_t = dm_samps * self.tsamp_s
         D = 4.14881e6    #ms, needs freqs to be in MHz, output delays in ms   #From Pulsar Handbook 
         ftop = self.ftop_MHz - (self.plan.foff / 2e6)
-        print("\n\n\n\nTHIS IS THE CHANGED CODEEEEE\n\n\n\n")
+        print("THIS IS THE CHANGED CODEEEEE")
         fbottom = self.fbottom_MHz + (self.plan.foff / 2e6)
         DM_pccc = (delta_t * 1e3) / (D * (fbottom**-2 - ftop**-2))
         return DM_pccc
@@ -147,7 +147,7 @@ class FakeVisibility(object):
         fbottom = self.fbottom_MHz + (self.plan.foff / 2e6)
         delta_t_ms = dm_pccc * D * (fbottom**-2 - ftop**-2)      #ms
         delta_t_s = delta_t_ms * 1e-3
-        print("\n\n\n\nTHIS IS THE CHANGED CODEEEEE\n\n\n\n")
+        print("THIS IS THE CHANGED CODEEEEE")
         delta_t_samps = np.rint(delta_t_s / self.tsamp_s).astype('int')
 
         return delta_t_samps
