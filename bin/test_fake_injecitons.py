@@ -65,7 +65,7 @@ def main(args):
 
     injections_params_file = args.inj_params
     plan = PipelinePlan(f, "--ndm 512")
-    print("Plan.freqs = ", plan.freqs)
+    #print("Plan.freqs = ", plan.freqs)
     FV = FakeVisibility(plan, tot_nsamps = 256 * 200 * 50,  injection_params_file = args.inj_params)
     sums_m1 = []
     sums_0 = []
@@ -77,6 +77,8 @@ def main(args):
     try:
         iblock = np.zeros((190, 256, 1))
         for ii, block in enumerate(FV.get_fake_data_block()):
+            if ii > 200:
+                break
             print(ii, len(injection_params['furby_props']), "<<<<<<")
             #print(injection_params['furby_props'][int(ii)]['dm_samps'])
             iblock = np.concatenate([iblock, block], axis=2)
@@ -96,6 +98,7 @@ def main(args):
                 #get_dm_mask_call = f"get_dm_mask((f_lower = {(plan.fmin - np.abs(plan.foff)/2.)*1e-9},  chanbwGhz={np.abs(plan.foff)*1e-9}, Nchan={plan.nf}, NDMtrials = 1024, TimeBlockSize = {plan.nt}, wanted_idm = {dm_samps})"
                 dm_mask = get_dm_mask(f_lower = (plan.fmin - np.abs(plan.foff)/2.)*1e-9,  chanbwGhz=np.abs(plan.foff)*1e-9, Nchan=plan.nf, NDMtrials = 1024, TimeBlockSize = plan.nt, wanted_idm = int(dm_samps))
                 dm_mask_vg = get_dm_mask_vg(int(dm_samps), plan.freqs[::-1])[::-1]
+                #print("DM_MASK_VG =", dm_mask_vg, "for dm =", int(dm_samps))
 
                 if args.plot_all:
                     '''
@@ -146,9 +149,13 @@ def main(args):
                     plt.figure()
                     plt.imshow(dm_mask, aspect='auto', interpolation="None", alpha=0.5)
                     plt.imshow(frb_ex_1, aspect='auto', interpolation="None", alpha=0.5)
+                    plt.title("DM mask Keith for dm_samps = {1}, block = {2}".format(dm_samps, dm_samps, ii))
+
+                    plt.figure()
+                    plt.imshow(dm_mask_vg, aspect='auto', interpolation="None", alpha=0.5)
                     plt.imshow(frb_ex_1_vg, aspect='auto', interpolation="None", alpha=0.5)
                     #plt.title("DM mask for dm_pccc = {0}, dm_samps = {1}, block = {2}".format(dm_pccc, dm_samps, ii))
-                    plt.title("DM mask for dm_samps = {1}, block = {2}".format(dm_samps, dm_samps, ii))
+                    plt.title("DM mask VG for dm_samps = {1}, block = {2}".format(dm_samps, dm_samps, ii))
             
                 if args.plot_all:
                     plt.figure()
