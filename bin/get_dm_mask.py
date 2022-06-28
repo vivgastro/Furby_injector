@@ -12,6 +12,9 @@ import numpy as np
 from scipy import constants
 sys.path.append('../craft_craco/src/craft/')
 
+import sys
+sys.path.append("/home/gup037/Codes/craft/src/craft/")
+
 import fdmt # you'll need to have ../python in  you PYTHONPATH
 from collections import OrderedDict
 
@@ -45,7 +48,7 @@ def get_dm_mask(f_lower=0.976,chanbwGhz=1e-3,Nchan=256,NDMtrials=1024,
     
     thefdmt=init_fdmt(f_lower,chanbwGhz,Nchan,NDMtrials,TimeBlockSize)
     myfrbmask = thefdmt.add_frb_track(wanted_idm)
-    print("shape is ",myfrbmask.shape)
+    #print("shape is ",myfrbmask.shape)
     if plot:
         imshow(myfrbmask, aspect='auto', origin='lower')
         plt.xlabel('time')
