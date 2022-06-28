@@ -39,7 +39,6 @@ def dircos_from_wcs(coords, wcs):
         raise TypeError('Input coords must be an instance of class astrop.coordinates.SkyCoord')
         
     xy_pix = wcs.all_world2pix(NP.hstack([coords.ra.deg.reshape(-1,1), coords.dec.deg.reshape(-1,1)]), 1)
-    print("PIxel values = ", xy_pix)
     xy_pix = xy_pix.reshape(-1,2)
     x = xy_pix[:,0]
     y = xy_pix[:,1]
@@ -49,7 +48,6 @@ def dircos_from_wcs(coords, wcs):
     m = NP.sin(NP.radians(theta_y))
     n = NP.sqrt(1-(l**2+m**2))
     dircos = NP.hstack([l.reshape(-1,1), m.reshape(-1,1), n.reshape(-1,1)])
-    print("DIRCOS here", dircos) 
     return dircos
 
 ################################################################################
