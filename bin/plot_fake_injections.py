@@ -20,7 +20,7 @@ def main(args):
     block_gen = FV.get_fake_data_block
 
     for ii, block in enumerate(FV.get_fake_data_block()):
-        print(f"Sum of block = {ii} ", np.sum(np.abs(block)))
+        print(f"For block {ii}: Sum of abs(block) is {np.sum(np.abs(block))}, mean of abs(block) is {np.mean(np.abs(block.ravel()))}, rms is {np.std(block.ravel())}" )
         fig = plt.figure(figsize=(20, 10))
         ax1 = fig.add_subplot(221)
         ax1.imshow(block.real.sum(axis=0), aspect='auto', interpolation='None')
