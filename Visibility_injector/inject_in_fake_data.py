@@ -43,7 +43,7 @@ class FakeVisibility(object):
     Simulates fake visibilities 
     '''
     
-    def __init__(self, plan, injection_params_file, tot_nsamps=None, logfile = None):
+    def __init__(self, plan, injection_params_file, tot_nsamps=None, vis_source=None, logfile = None):
         '''
         Initialises all the parameters required for simulating fake
         visibilities, and parses the injection parameters provided.
@@ -98,6 +98,7 @@ class FakeVisibility(object):
 
         self.set_furby_gen_mode()
 
+        self.vis_source = self.get_vis_data(vis_source)
         
         if tot_nsamps is None:
             self.max_nblk = np.inf
@@ -122,7 +123,34 @@ class FakeVisibility(object):
                             }
         np.random.seed(self.injection_params['seed'])
 
-        
+
+    def get_vis_data(self, fname):
+        '''
+        Either creates fake vis data (zeros or random noise)
+        Or reads Visibility data from a file on disk
+
+        If fname is None, then it generates fake vis data
+
+        fname: str
+            Path to the file on disk which contains the visibities to read
+        '''
+        self.log.debug(f"Vis_source is {fname}")
+        if fname == None:
+            data_block = np.zeros(self.blk_shape, dtype=np.complex64)
+            if self.injection_params['add_noise']:
+                self.log.debug("Adding fake noise")
+                self.add_fake_noise(data_block)
+        else:
+            self.log.debug("Reading vis from file")
+            #Open the file
+            #Read the data
+            #Make a data cube (nbl, nch, nt)
+            #Assert that the shape (nbl, nch, nt) matches (plan.nbl, plan.nf, plan.nt)
+            #Reorder the baselines to match plan.baseline_order
+            #Return the cube
+            raise NotImplementedError("Not yet implemented reading of visibilities from a file")
+        yield data_block
+
     def convert_dm_samps_to_pccc(self, dm_samps):
         '''
         Converts DM from samp units to pc/cc
@@ -396,10 +424,9 @@ class FakeVisibility(object):
         while True:
             iblk +=1
             self.log.info(f"Block ID: {iblk}, start_samp = {iblk * self.blk_shape[2]}, end_samp = {(iblk+1) * self.blk_shape[2]}")
-            data_block = np.zeros(self.blk_shape, dtype=np.complex64)
 
-            if self.injection_params['add_noise']:
-                self.add_fake_noise(data_block)
+            data_block = next(self.vis_source)
+
 
             if injection_samp + samps_added < iblk * self.blk_shape[2]:
                 raise RuntimeError(f"The requested injection samp {injection_samp} is too soon.")
@@ -454,5 +481,87 @@ class FakeVisibility(object):
                 break
 
 
+    def add_frb_to_data_block(self, data_block):
+        '''
+        Gets data blocks containing fake noise and injected furbys.
+        It calls the add_fake_noise() and get_ith_furby() functions,
+        adds the noise and the furby at appropriate time stamps
+        and yields one data block at a time.
+
+        If a furby is asked to be injected before the last injection
+        has finished, it raises a Warning and ignored the next
+        injection while continuing to finish the current one. Future
+        injections remain unaffected.
+        '''
+        breaking_point = False
+        injecting_here = False
+        i_inj = 0
+        iFRB = self.sort[i_inj]
+        iblk = -1
+        current_mock_FRB_data, current_mock_FRB_NSAMPS, location_of_peak = self.get_ith_furby(iFRB)
+        #current_mock_FRB_vis = self.gen_no_vis(current_mock_FRB_data)
+        current_mock_FRB_vis = gen_vis(self.plan, src_ra_deg = self.injection_params['injection_coords'][iFRB][0], 
+                                       src_dec_deg = self.injection_params['injection_coords'][iFRB][1], 
+                                       dynamic_spectrum=current_mock_FRB_data.T)
+        samps_added = 0
+        injection_samp = self.injection_params['injection_tsamps'][iFRB] - location_of_peak
+
+        #for iblk in range(self.nblk):
+        while True:
+            iblk +=1
+            self.log.info(f"Block ID: {iblk}, start_samp = {iblk * self.blk_shape[2]}, end_samp = {(iblk+1) * self.blk_shape[2]}")
+
+            #data_block = next(self.vis_source)
+            assert data_block.shape == self.blk_shape
+
+            if injection_samp + samps_added < iblk * self.blk_shape[2]:
+                raise RuntimeError(f"The requested injection samp {injection_samp} is too soon.")
+            
+            if injection_samp >= iblk * self.blk_shape[2] and injection_samp < (iblk + 1) * self.blk_shape[2]:
+                self.log.info(f"Injection will start in this block")
+                injecting_here = True
+            if injecting_here:
+                injection_start_samp_within_block = max([0, injection_samp - iblk * self.blk_shape[2]])
+
+                injection_end_samp_within_block = min([self.blk_shape[2], 
+                    injection_samp + current_mock_FRB_NSAMPS - iblk * self.blk_shape[2]])
+
+                self.log.info(f"injection_start_samp_within_block = {injection_start_samp_within_block}")
+                self.log.info(f"injection_end_samp_within_block = {injection_end_samp_within_block}")
+
+                samps_to_add_in_this_block = injection_end_samp_within_block - injection_start_samp_within_block
+
+                data_block[:, :, injection_start_samp_within_block : injection_end_samp_within_block] += \
+                    current_mock_FRB_vis[:, :, samps_added : samps_added + samps_to_add_in_this_block]
+
+                samps_added += samps_to_add_in_this_block
+            
+            if (injection_samp + current_mock_FRB_NSAMPS-1) >= iblk * self.blk_shape[2] and (injection_samp + current_mock_FRB_NSAMPS-1) < (iblk + 1) * self.blk_shape[2]:
+            #if samps_added == current_mock_FRB_NSAMPS:
+                self.log.info("This was the last block which had a section of the frb, now onto the next one")
+                injecting_here = False
+                i_inj += 1
+                if i_inj >= self.n_injections or iblk >= self.max_nblk:
+                    self.log.info("This was also the last FRB, so this will be the last block I will yield")
+                    breaking_point = True
+
+                else:
+                    iFRB = self.sort[i_inj]
+
+                    if i_inj < self.n_injections:
+                        current_mock_FRB_data, current_mock_FRB_NSAMPS, location_of_peak = self.get_ith_furby(iFRB)
+                        #current_mock_FRB_vis = self.gen_no_vis(current_mock_FRB_data)
+                        current_mock_FRB_vis = gen_vis(self.plan, src_ra_deg = self.injection_params['injection_coords'][iFRB][0], 
+                                                    src_dec_deg = self.injection_params['injection_coords'][iFRB][1], 
+                                                    dynamic_spectrum=current_mock_FRB_data.T)
+
+                        samps_added = 0
+                        injection_samp = self.injection_params['injection_tsamps'][iFRB] - location_of_peak
+                        self.log.info(f"New injection samp will be {injection_samp}")
 
 
+    
+            yield data_block
+
+            if breaking_point:
+                break
