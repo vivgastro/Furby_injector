@@ -86,6 +86,7 @@ class FakeVisibility(object):
         '''
         self.log = setUpLogging(logfile)
         self.plan = plan
+        print("Plan.nt IS ", plan.nt)
         self.ftop_MHz = (self.plan.fmax + self.plan.foff/2) / 1e6
         self.fbottom_MHz = (self.plan.fmin - self.plan.foff/2) / 1e6
         #Adding an extra line to make sure I parse only floats from plan
@@ -136,10 +137,12 @@ class FakeVisibility(object):
         '''
         self.log.debug(f"Vis_source is {fname}")
         if fname == None:
-            data_block = np.zeros(self.blk_shape, dtype=np.complex64)
-            if self.injection_params['add_noise']:
-                self.log.debug("Adding fake noise")
-                self.add_fake_noise(data_block)
+            while True:
+                data_block = np.zeros(self.blk_shape, dtype=np.complex64)
+                if self.injection_params['add_noise']:
+                    self.log.debug("Adding fake noise")
+                    self.add_fake_noise(data_block)
+                yield data_block
         else:
             self.log.debug("Reading vis from file")
             #Open the file
@@ -149,7 +152,6 @@ class FakeVisibility(object):
             #Reorder the baselines to match plan.baseline_order
             #Return the cube
             raise NotImplementedError("Not yet implemented reading of visibilities from a file")
-        yield data_block
 
     def convert_dm_samps_to_pccc(self, dm_samps):
         '''
