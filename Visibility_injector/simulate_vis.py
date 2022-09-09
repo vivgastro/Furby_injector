@@ -1,7 +1,7 @@
 from __future__ import division, print_function, absolute_import
 import copy
 import numpy as NP
-from pyuvdata import UVData
+#from pyuvdata import UVData
 from astropy.coordinates import SkyCoord, AltAz, ICRS, FK5, EarthLocation, Longitude
 from astropy import units as U
 from astropy import constants as FC
