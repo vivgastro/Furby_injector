@@ -9,9 +9,9 @@ from craft import uvfits
 
 def main(args):
     injections_params_file = args.inj_params
-    fits = '/home/gup037/tmp/frb_d0_t0_a1_sninf_lm00.fits'
+    fits = args.uv
     f = uvfits.open(fits) 
-    plan = PipelinePlan(f, f"--ndm 512")
+    plan = PipelinePlan(f, f"--ndm 250")
 
     injections_params_file = args.inj_params
 
@@ -37,5 +37,6 @@ def main(args):
 if __name__ == '__main__':
     a = argparse.ArgumentParser()
     a.add_argument("inj_params", type=str, help="Path to the file containing injection parameters")
+    a.add_argument("-uv", type=str, help="Path to the uvfits file to make a Plan from (def = /home/gup037/tmp/frb_d0_t0_a1_sninf_lm00.fits)", default="/home/gup037/tmp/frb_d0_t0_a1_sninf_lm00.fits")
     args = a.parse_args()
     main(args)
