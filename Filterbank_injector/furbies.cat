@@ -1,0 +1,10 @@
+#This is the furby catalogue for ./ directory
+#Created on : Mon Mar  6 10:34:43 2023
+
+
+#The arguments that were passed to create this catalog are:
+Namespace(D='./', Num=1, dm=[10.0], dmsmear=True, noise_per_sample=1.0, order='TF', params='craco_commissioning_fil_params.yml', scattering_index=-4.4, shape='tophat', snr=[30.0], spectrum='slope', subsample_phase=0.5, tau=[0.0], tfactor=10, tot_nsamps=None, width=[0.5])
+
+#FURBY_ID	DM(pc/cc)	FWHM(ms)	TAU0(ms)	SNR
+14835	10.0	1.728	0.0	30.0
+54598	10.0	1.728	0.0	30.0
