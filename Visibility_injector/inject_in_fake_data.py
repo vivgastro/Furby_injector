@@ -2,6 +2,7 @@ import numpy as np
 from Furby_p3.sim_furby import get_furby
 from Furby_p3.Furby_reader import Furby_reader
 from Visibility_injector.simulate_vis import gen_dispersed_vis_1PS_from_plan as gen_vis
+from Visibility_injector.simulate_vis import convert_cube_to_dict
 
 import yaml
 #import matplotlib.pyplot as plt
@@ -15,16 +16,16 @@ def setUpLogging(logfile=None):
     '''
     Sets up and returns a logger
     '''
-
+    logging.basicConfig(level=logging.DEBUG)
     logger = logging.getLogger("Visbility_injector")
 
     stderr_formatter = logging.Formatter("%(name)s - %(levelname)s: %(message)s")
     logfile_formatter = logging.Formatter("%(asctime)s, %(levelname)s: %(message)s")
 
-    consoleHandler = logging.StreamHandler(sys.stderr)
-    consoleHandler.setFormatter(stderr_formatter)
-    consoleHandler.setLevel(logging.DEBUG)
-    logger.addHandler(consoleHandler)
+    #consoleHandler = logging.StreamHandler(sys.stdout)
+    #consoleHandler.setFormatter(stderr_formatter)
+    #consoleHandler.setLevel(logging.DEBUG)
+    #logger.addHandler(consoleHandler)
 
     if logfile:
         try:
@@ -35,6 +36,7 @@ def setUpLogging(logfile=None):
         except IOError as E:
             raise IOError("Could not enable logging to file: {0}\n".format(logfile), E)
     
+    
     return logger
 
     
@@ -43,7 +45,7 @@ class FakeVisibility(object):
     Simulates fake visibilities 
     '''
     
-    def __init__(self, plan, injection_params_file, tot_nsamps=None, vis_source=None, logfile = None):
+    def __init__(self, plan, injection_params_file, tot_nsamps=None, vis_source=None, outblock_type=np.ndarray, logfile = None):
         '''
         Initialises all the parameters required for simulating fake
         visibilities, and parses the injection parameters provided.
@@ -71,6 +73,16 @@ class FakeVisibility(object):
             Note - If the requested number of samples is not an
             integral multiple of the plan.nt, then the last block 
             containing a fraction of plan.nt will not be generated.
+
+        vis_source : str, optional
+            File path from which vis data has to be read. If None,
+            then vis data would be simulated on the fly. Def = None
+            (Reading from the file is not implemented yet)
+
+        outblock_type : type, optional
+            Format of the output block desired. Options are:
+            np.ndarray or dict. Default = np.ndarray
+
         
         logfile : str, optional
             Log file to which the injection would be logged
@@ -86,7 +98,7 @@ class FakeVisibility(object):
         '''
         self.log = setUpLogging(logfile)
         self.plan = plan
-        print("Plan.nt IS ", plan.nt)
+        #print("Plan.nt IS ", plan.nt)
         self.ftop_MHz = (self.plan.fmax + self.plan.foff/2) / 1e6
         self.fbottom_MHz = (self.plan.fmin - self.plan.foff/2) / 1e6
         #Adding an extra line to make sure I parse only floats from plan
@@ -96,6 +108,11 @@ class FakeVisibility(object):
         else:
             self.tsamp_s = self.plan.tsamp_s
         self.get_injection_params(injection_params_file)
+
+        if outblock_type in [np.ndarray, dict]:
+            self.outblock_type = outblock_type
+        else:
+            raise ValueError(f"Unknown outblock_type specified: {outblock_type}")
 
         self.set_furby_gen_mode()
 
@@ -163,7 +180,7 @@ class FakeVisibility(object):
         delta_t = dm_samps * self.tsamp_s
         D = 4.14881e6    #ms, needs freqs to be in MHz, output delays in ms   #From Pulsar Handbook 
         ftop = self.ftop_MHz - (self.plan.foff / 2e6)
-        print("THIS IS THE CHANGED CODEEEEE")
+        #print("THIS IS THE CHANGED CODEEEEE")
         fbottom = self.fbottom_MHz + (self.plan.foff / 2e6)
         DM_pccc = (delta_t * 1e3) / (D * (fbottom**-2 - ftop**-2))
         return DM_pccc
@@ -177,7 +194,7 @@ class FakeVisibility(object):
         fbottom = self.fbottom_MHz + (self.plan.foff / 2e6)
         delta_t_ms = dm_pccc * D * (fbottom**-2 - ftop**-2)      #ms
         delta_t_s = delta_t_ms * 1e-3
-        print("THIS IS THE CHANGED CODEEEEE")
+        #print("THIS IS THE CHANGED CODEEEEE")
         delta_t_samps = np.rint(delta_t_s / self.tsamp_s).astype('int')
 
         return delta_t_samps
@@ -449,6 +466,7 @@ class FakeVisibility(object):
 
                 data_block[:, :, injection_start_samp_within_block : injection_end_samp_within_block] += \
                     current_mock_FRB_vis[:, :, samps_added : samps_added + samps_to_add_in_this_block]
+                print("I've just injected something")
 
                 samps_added += samps_to_add_in_this_block
             
@@ -476,8 +494,10 @@ class FakeVisibility(object):
                         self.log.info(f"New injection samp will be {injection_samp}")
 
 
-    
-            yield data_block
+            if self.outblock_type == np.ndarray:
+                yield data_block
+            elif self.outblock_type == dict:
+                yield convert_cube_to_dict(self.plan, data_block)
 
             if breaking_point:
                 break
