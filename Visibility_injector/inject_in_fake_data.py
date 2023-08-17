@@ -557,18 +557,32 @@ class FakeVisibility(object):
             location_of_peak=location_of_peak)
         next_injection.set_furby_data(current_mock_FRB_data)
         return next_injection
+    
+    def generate_vis_for_current_injection(self, current_plan):
+        if 'injection_pixels' in self.injection_params:
+            #Update the RA/DEC values generated earlier using an older version of plan
+            upix = self.injection_params['injection_pixels'][self.current_injection.iFRB][0]
+            vpix = self.injection_params['injection_pixels'][self.current_injection.iFRB][1]
+            coords = current_plan.wcs.pixel_to_world(upix, vpix)
+            ra, dec =  coords.ra.deg, coords.dec.deg
+            
+        else:
+            ra = self.injection_params['injection_coords'][self.current_injection.iFRB][0]
+            dec = self.injection_params['injection_coords'][self.current_injection.iFRB][1]
+            
+        current_mock_FRB_vis = gen_vis(current_plan, 
+                                       src_ra_deg = ra, 
+                                       src_dec_deg = dec, 
+                                       dynamic_spectrum=self.current_injection.furby_data.T)
+        self.current_injection.set_furby_vis(current_mock_FRB_vis)
+
 
     def inject_frb_in_data_block(self, data_block, iblk, current_plan):
         '''
-        Gets data blocks containing fake noise and injected furbys.
-        It calls the add_fake_noise() and get_ith_furby() functions,
-        adds the noise and the furby at appropriate time stamps
-        and yields one data block at a time.
-
-        If a furby is asked to be injected before the last injection
-        has finished, it raises a Warning and ignored the next
-        injection while continuing to finish the current one. Future
-        injections remain unaffected.
+        Adds the furby block to the provided data block
+        Simulates visibilities in run-time using the UVWs and the WCS in
+        the provided current_plan
+        Returns the data_block after adding the furby vis
         '''
         if self.injections_added == self.n_injections:
             return data_block
@@ -588,10 +602,7 @@ class FakeVisibility(object):
             self.log.info(f"{self.injections_added + 1}th injection will start in this block")
             self.injecting_here = True
             #current_plan = create_plan(self.fname, iblk)
-            current_mock_FRB_vis = gen_vis(current_plan, src_ra_deg = self.injection_params['injection_coords'][self.current_injection.iFRB][0], 
-                                       src_dec_deg = self.injection_params['injection_coords'][self.current_injection.iFRB][1], 
-                                       dynamic_spectrum=self.current_injection.furby_data.T)
-            self.current_injection.set_furby_vis(current_mock_FRB_vis)
+            self.generate_vis_for_current_injection(current_plan)
         
         if self.injecting_here:
             
