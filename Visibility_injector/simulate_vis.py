@@ -145,7 +145,11 @@ def get_bl_from_plan(plan):
     blid = []
     #for baseline_id, bldata in list(plan.baselines.items()):
     for baseline_id in plan.baseline_order:
-        bldata = plan.baselines[baseline_id][:3]
+        bldata = {}
+        bldata['UU'] = plan.baselines[baseline_id][0]
+        bldata['VV'] = plan.baselines[baseline_id][1]
+        bldata['WW'] = plan.baselines[baseline_id][2]
+        #bldata = plan.baselines[baseline_id][:3]
         u = bldata['UU'] * FC.c.si.value # convert seconds to metres
         v = bldata['VV'] * FC.c.si.value # convert seconds to metres
         w = bldata['WW'] * FC.c.si.value # convert seconds to metres
