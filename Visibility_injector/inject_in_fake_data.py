@@ -66,6 +66,7 @@ class CurrentInjection(object):
     def furby_vis(self):
         if self._furby_vis is None:
             raise RuntimeError("Furby_vis has not been set yet!")
+        return self._furby_vis
                 
     def set_furby_data(self, furby_data_block):
         self._furby_data = furby_data_block
@@ -107,10 +108,10 @@ class FakeVisibility(object):
             integral multiple of the plan.nt, then the last block 
             containing a fraction of plan.nt will not be generated.
 
-        vis_source : str, optional
-            File path from which vis data has to be read. If None,
-            then vis data would be simulated on the fly. Def = None
-            (Reading from the file is not implemented yet)
+        vis_source : object (craft.uvfits), optional
+            Object of craft.uvfits class
+            if left unspecified, then the data will be simulated
+            Def = None
 
         outblock_type : type, optional
             Format of the output block desired. Options are:
@@ -198,7 +199,8 @@ class FakeVisibility(object):
                 yield data_block
         else:
             self.log.debug("Reading vis from file")
-            f = uvfits.open(fname)
+            #f = uvfits.open(fname)
+            f = fname
             blocker = f.time_blocks(nt = self.plan.nt)
             while True:
                 block = next(blocker)
@@ -506,9 +508,13 @@ class FakeVisibility(object):
 
                 samps_to_add_in_this_block = injection_end_samp_within_block - injection_start_samp_within_block
 
-                data_block[:, :, injection_start_samp_within_block : injection_end_samp_within_block] += \
-                    current_mock_FRB_vis[:, :, samps_added : samps_added + samps_to_add_in_this_block]
-                print("I've just injected something")
+                try:
+                    data_block[:, :, injection_start_samp_within_block : injection_end_samp_within_block] += \
+                        current_mock_FRB_vis[:, :, samps_added : samps_added + samps_to_add_in_this_block]
+                    print("I've just injected something")
+                except:
+                    import IPython
+                    IPython.embed()
 
                 samps_added += samps_to_add_in_this_block
             
