@@ -27,7 +27,7 @@ def main(args):
 
     injection_taus = np.zeros(args.num) + 1e-16
     injection_spectra = np.array([r'flat'] * args.num)
-    injection_noise_per_sample = np.ones(args.num)
+    injection_noise_per_sample = np.ones(args.num) * args.noise_per_sample
     injection_shapes = np.array([r'tophat'] * args.num)
 
     #injection_tstamps = np.linspace(args.tstamp[0], args.tstamp[1], args.num, endpoint = True)
@@ -115,6 +115,7 @@ if __name__ == '__main__':
 
     a.add_argument('-add_noise', action='store_true', help="Add noise? (def = False)", default= False)
     a.add_argument('-seed', type = int, help="Seed (def = 777)", default=777)
+    a.add_argument('-noise_per_sample', type=float, help='Noise per sample in the data to which the FRB will be added; def=1.0', default=1.0)
     a.add_argument('-outfile', type=str, help = "Path to the output file (def = './auto_inj_params.yml')", default = "./auto_inj_params.yml")
 
     args = a.parse_args()
