@@ -6,7 +6,7 @@ from Visibility_injector.simulate_vis import convert_cube_to_dict
 from craft import uvfits, craco
 
 import yaml
-#import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 import logging, sys
 from logging.handlers import RotatingFileHandler
 
@@ -113,6 +113,10 @@ class FakeVisibility(object):
             if left unspecified, then the data will be simulated
             Def = None
 
+        vis_source : str
+            'fake' if the data is to be simulated
+            leave is as None if the data is being read from a file external to this class
+
         outblock_type : type, optional
             Format of the output block desired. Options are:
             np.ndarray or dict. Default = np.ndarray
@@ -150,15 +154,9 @@ class FakeVisibility(object):
 
         self.set_furby_gen_mode()
 
-        self.vis_source = self.get_vis_data(vis_source)
+        #self.vis_source = self.get_vis_data(vis_source)
+        self.vis_source = vis_source
         
-        if tot_nsamps is None:
-            self.max_nblk = np.inf
-        else:
-            self.max_nblk = tot_nsamps // plan.nt
-
-        if self.max_nblk < 1:
-            raise ValueError(f"Too few tot_nsamps:{tot_nsamps}. We need to generate at least one block")
         self.blk_shape = (plan.nbl, plan.nf, plan.nt)
 
         self.amplitude_ratio =  1/np.sqrt(self.blk_shape[0])
@@ -177,6 +175,37 @@ class FakeVisibility(object):
                                 'name': "FAKE"                                
                             }
         np.random.seed(self.injection_params['seed'])
+        
+        if tot_nsamps is None:
+            if self.vis_source is not None:
+                self.max_nblk = np.max(self.injection_params['injection_tsamps']) // plan.nt + 1     #Finish simulating one block after all injections have been added
+            else:
+                self.max_nblk = np.inf
+
+        else:
+            self.max_nblk = tot_nsamps // plan.nt
+
+        print(f"self.max_nblk is {self.max_nblk}, vis_source is {self.vis_source}, tot_nsamps is {tot_nsamps}")
+
+        if self.max_nblk < 1:
+            raise ValueError(f"Too few tot_nsamps:{tot_nsamps}. We need to generate at least one block")
+
+    def gen_fake_blocks(self):
+        '''
+        Generates blocks of fake vis data (0s or with noise)
+        yields the blocks one at a time
+        '''
+        self.log.debug(f"Starting to generate fake vis data with shape {self.blk_shape} and dtype = complex64")
+
+        iblks_gen = 0
+        while iblks_gen <= self.max_nblk:
+            data_block = np.zeros(self.blk_shape, dtype=np.complex64)
+            if self.injection_params['add_noise']:
+                self.log.debug("Generating fake noise and adding to the block")
+                self.add_fake_noise(data_block)
+
+            yield data_block
+            iblks_gen += 1
 
 
     def get_vis_data(self, fname):
@@ -191,12 +220,8 @@ class FakeVisibility(object):
         '''
         self.log.debug(f"Vis_source is {fname}")
         if fname == None:
-            while True:
-                data_block = np.zeros(self.blk_shape, dtype=np.complex64)
-                if self.injection_params['add_noise']:
-                    self.log.debug("Adding fake noise")
-                    self.add_fake_noise(data_block)
-                yield data_block
+            return self.gen_fake_blocks()
+
         else:
             self.log.debug("Reading vis from file")
             #f = uvfits.open(fname)
@@ -618,10 +643,42 @@ class FakeVisibility(object):
             self.log.info(f"injection_end_samp_within_block = {injection_end_samp_within_block}")
             
             samps_to_add_in_this_block = injection_end_samp_within_block - injection_start_samp_within_block
-    
+   
+            '''
+            plt.figure()
+            plt.imshow(data_block.real.std(axis=-1), aspect='auto', interpolation='None')
+            plt.title(f"Input block rmses iblk= {iblk}")
+            
+            plt.figure()
+            plt.imshow(data_block.real.mean(axis=-1), aspect='auto', interpolation='None')
+            plt.title(f"Input block means iblk= {iblk}")
+            
+            plt.figure()
+            plt.imshow(data_block.real.sum(axis=0), aspect='auto', interpolation='None')
+            plt.title(f"Input block iblk= {iblk}")
+            
+            plt.figure()
+            plt.imshow(np.abs(self.current_injection.furby_vis).sum(axis=0), aspect='auto', interpolation='None')
+            plt.title(f"Furby vis - injection start samp = {self.current_injection.injection_start_samp}")
+            plt.figure()
+            plt.imshow(self.current_injection.furby_vis.real.sum(axis=0), aspect='auto', interpolation='None')
+            plt.title(f"Furby vis.real - injection start samp = {self.current_injection.injection_start_samp}")
+            plt.figure()
+            plt.imshow(self.current_injection.furby_vis.imag.sum(axis=0), aspect='auto', interpolation='None')
+            plt.title(f"Furby vis.imag - injection start samp = {self.current_injection.injection_start_samp}")
+            '''
             data_block[:, :, injection_start_samp_within_block : injection_end_samp_within_block] += \
                 self.current_injection.furby_vis[:, :, self.current_injection.furby_samps_added : self.current_injection.furby_samps_added + samps_to_add_in_this_block]
-            
+            '''
+            plt.figure()
+            plt.imshow(data_block.real.sum(axis=0), aspect='auto', interpolation='None')
+            plt.title("Input block + injection, iblk = {iblk}")
+
+            plt.figure()
+            plt.plot(data_block.real.sum(axis=0).sum(axis=0))
+            plt.title("Furby added time series, iblk={iblk}")
+            plt.show()
+            '''
             self.current_injection.furby_samps_added += samps_to_add_in_this_block
             
             if (self.current_injection.injection_end_samp) >= iblk * nt and (self.current_injection.injection_end_samp < (iblk + 1) * nt):
@@ -636,5 +693,5 @@ class FakeVisibility(object):
                     self.current_injection = self.load_next_injection()
                     data_block = self.inject_frb_in_data_block(data_block, iblk, current_plan)
 
-        return data_block
+        return data_block.copy()
             
