@@ -42,8 +42,8 @@ def dircos_from_wcs(coords, wcs):
     xy_pix = xy_pix.reshape(-1,2)
     x = xy_pix[:,0]
     y = xy_pix[:,1]
-    theta_x = (x-wcs.wcs.crpix[0]) * wcs.wcs.cdelt[0]
-    theta_y = (y-wcs.wcs.crpix[1]) * wcs.wcs.cdelt[1]
+    theta_x = (x-wcs.wcs.crpix[0]) * wcs.wcs.cdelt[0] * -1
+    theta_y = (y-wcs.wcs.crpix[1]) * wcs.wcs.cdelt[1] * -1
     l = NP.sin(NP.radians(theta_x))
     m = NP.sin(NP.radians(theta_y))
     n = NP.sqrt(1-(l**2+m**2))
