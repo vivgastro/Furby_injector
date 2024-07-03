@@ -4,7 +4,9 @@ import yaml
 
 def main(args):
     seed = args.seed
+    const_value = args.const_value
     add_noise = args.add_noise
+    add_const = args.add_const 
 
     if args.injection_upix is None:
         injection_ra = np.linspace(args.ra[0], args.ra[1], args.num, endpoint=True)
@@ -59,7 +61,9 @@ def main(args):
 
     params = {
             'seed': seed,
+            'const_value': const_value,
             'add_noise' : add_noise,
+            'add_const': add_const,
             'injection_tsamps' : injection_tstamps.tolist(),
             coord_key : coord_val.tolist(),
             
@@ -114,7 +118,9 @@ if __name__ == '__main__':
     g4.add_argument('-injection_vpix', type=float, nargs = 2, help="Injection vpix range (e.g. 128, 130.5); def=[128, 128]")
 
     a.add_argument('-add_noise', action='store_true', help="Add noise? (def = False)", default= False)
+    a.add_argument('-add_const', action='store_true', help="Add const? (def = False)", default= False)
     a.add_argument('-seed', type = int, help="Seed (def = 777)", default=777)
+    a.add_argument('-const_value', type = int, help="Constant value (def = 1)", default=1)
     a.add_argument('-noise_per_sample', type=float, help='Noise per sample in the data to which the FRB will be added; def=1.0', default=1.0)
     a.add_argument('-outfile', type=str, help = "Path to the output file (def = './auto_inj_params.yml')", default = "./auto_inj_params.yml")
 

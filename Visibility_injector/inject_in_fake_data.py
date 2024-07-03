@@ -192,7 +192,7 @@ class FakeVisibility(object):
 
     def gen_fake_blocks(self):
         '''
-        Generates blocks of fake vis data (0s or with noise)
+        Generates blocks of fake vis data (0s, const_value or with noise)
         yields the blocks one at a time
         '''
         self.log.debug(f"Starting to generate fake vis data with shape {self.blk_shape} and dtype = complex64")
@@ -200,9 +200,14 @@ class FakeVisibility(object):
         iblks_gen = 0
         while iblks_gen <= self.max_nblk:
             data_block = np.zeros(self.blk_shape, dtype=np.complex64)
+            if self.injection_params['add_const']:
+                self.log.debug(f"Adding constant value of {self.injection_params['const_value']} to the simulated block")
+                data_block[:] = self.injection_params['const_value'] + 1j * self.injection_params['const_value']
+            
             if self.injection_params['add_noise']:
                 self.log.debug("Generating fake noise and adding to the block")
                 self.add_fake_noise(data_block)
+
 
             yield data_block
             iblks_gen += 1
@@ -374,7 +379,7 @@ class FakeVisibility(object):
                     parsed_prop[iprop] = prop[iprop]
             
             self.injection_params['parsed_furby_props'].append(parsed_prop)
-            
+
 
 
 
