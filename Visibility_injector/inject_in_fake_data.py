@@ -202,7 +202,7 @@ class FakeVisibility(object):
             data_block = np.zeros(self.blk_shape, dtype=np.complex64)
             if self.injection_params['add_const']:
                 self.log.debug(f"Adding constant value of {self.injection_params['const_value']} to the simulated block")
-                data_block[:] = self.injection_params['const_value'] + 1j * self.injection_params['const_value']
+                data_block[:] = self.injection_params['const_value']# + 1j * self.injection_params['const_value']
             
             if self.injection_params['add_noise']:
                 self.log.debug("Generating fake noise and adding to the block")
