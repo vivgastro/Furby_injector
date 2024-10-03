@@ -672,8 +672,11 @@ class FakeVisibility(object):
             plt.imshow(self.current_injection.furby_vis.imag.sum(axis=0), aspect='auto', interpolation='None')
             plt.title(f"Furby vis.imag - injection start samp = {self.current_injection.injection_start_samp}")
             '''
-            data_block[:, :, injection_start_samp_within_block : injection_end_samp_within_block] += \
-                self.current_injection.furby_vis[:, :, self.current_injection.furby_samps_added : self.current_injection.furby_samps_added + samps_to_add_in_this_block]
+            # Add only in non-zero (non-flagged) channels.
+            data_to_add_to = data_block[:, :, injection_start_samp_within_block : injection_end_samp_within_block]
+            valid_data = data_to_add_to != 0.
+            data_to_add_to[valid_data] += \
+                self.current_injection.furby_vis[:, :, self.current_injection.furby_samps_added : self.current_injection.furby_samps_added + samps_to_add_in_this_block][valid_data]
             '''
             plt.figure()
             plt.imshow(data_block.real.sum(axis=0), aspect='auto', interpolation='None')
