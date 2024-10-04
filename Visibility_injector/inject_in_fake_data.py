@@ -672,8 +672,10 @@ class FakeVisibility(object):
             plt.imshow(self.current_injection.furby_vis.imag.sum(axis=0), aspect='auto', interpolation='None')
             plt.title(f"Furby vis.imag - injection start samp = {self.current_injection.injection_start_samp}")
             '''
+            bad_data_mask = data_block == 0   #Find the masked values before adding the frb
             data_block[:, :, injection_start_samp_within_block : injection_end_samp_within_block] += \
                 self.current_injection.furby_vis[:, :, self.current_injection.furby_samps_added : self.current_injection.furby_samps_added + samps_to_add_in_this_block]
+            data_block[bad_data_mask] = 0     #Set those samples back to zero after adding the FRB
             '''
             plt.figure()
             plt.imshow(data_block.real.sum(axis=0), aspect='auto', interpolation='None')
